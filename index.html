@@ -50,10 +50,10 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink);}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:#8EF0B2;}
 .greet{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.4);border-radius:18px;padding:16px 16px 34px;position:relative;backdrop-filter:blur(2px);}
 .greet .kicker{font-size:10px;letter-spacing:2px;color:#FFE9B8;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.3);}
-.greet .big{font-size:21px;font-weight:800;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.35);padding-right:64px;margin-top:2px;}
-.greet .m2{font-size:11px;color:rgba(255,255,255,.95);margin-top:5px;text-shadow:0 1px 6px rgba(0,0,0,.4);padding-right:64px;line-height:1.6;}
+.greet .big{font-size:21px;font-weight:800;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.35);padding-right:96px;margin-top:2px;}
+.greet .m2{font-size:11px;color:rgba(255,255,255,.95);margin-top:5px;text-shadow:0 1px 6px rgba(0,0,0,.4);padding-right:96px;line-height:1.6;}
 /* 星星（长按进入家长模式）+ 星球 */
-.star-btn{position:absolute;right:52px;top:12px;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));}
+.star-btn{position:absolute;right:40px;top:6px;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;filter:drop-shadow(0 2px 5px rgba(0,0,0,.3));}
 .star-btn.pressing{animation:starGlow 3s linear forwards;}
 @keyframes starGlow{0%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(255,215,80,0));}100%{transform:scale(1.35);filter:drop-shadow(0 0 14px rgba(255,215,80,.95));}}
 .planet{width:42px;height:42px;border-radius:50%;position:absolute;right:12px;top:10px;background:radial-gradient(circle at 32% 30%,#FFD86B,#F5A623 70%);box-shadow:0 4px 10px rgba(0,0,0,.2);}
@@ -62,11 +62,11 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink);}
 .parent-progress{position:absolute;left:0;bottom:0;height:3px;background:#FFD75E;width:0%;border-radius:3px;}
 /* 首页入口卡片 */
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
-.tile{border-radius:18px;padding:16px 13px;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;background:rgba(255,255,255,.55);backdrop-filter:blur(8px);box-shadow:0 3px 10px rgba(0,0,0,.05);text-align:left;}
+.tile{border-radius:18px;padding:16px 13px;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;background:rgba(255,255,255,.55);backdrop-filter:blur(8px);box-shadow:0 3px 10px rgba(0,0,0,.05);}
 .tile:active{transform:scale(.97);}
-.tile .icon{font-size:24px;}
-.tile .name{font-size:15px;font-weight:800;margin-top:8px;}
-.tile .meta{font-size:11px;color:var(--ink-soft);margin-top:3px;}
+.tile .icon{font-size:26px;}
+.tile .name{font-size:15px;font-weight:800;margin-top:8px;text-align:center;}
+.tile .meta{font-size:11px;color:var(--ink-soft);margin-top:3px;text-align:center;}
 .t-yellow{background:rgba(255,243,214,.55);} .t-blue{background:rgba(234,243,255,.55);}
 .t-green{background:rgba(232,247,236,.55);} .t-pink{background:rgba(253,238,240,.55);}
 /* 首页进度与提示 */
@@ -914,7 +914,7 @@ const DB = (() => {
 
 let S = null;              // 全局数据
 let PARENT = false;        // 家长模式
-const APP_VERSION = 'v1.6';
+const APP_VERSION = 'v1.7';
 let currentPage = 'home';
 let booksFilter = { mode: 'all', year: null };
 let honorsFilter = 'all';
@@ -1650,10 +1650,16 @@ async function renderFeet() {
 }
 
 /* 脚步记录卡（列表用） */
+/* 脚步行程日期范围：单日只显示一天，多日显示 起始 ~ 结束 */
+function footDateRange(f) {
+  if (!f.endDate || f.endDate === f.date) return fmtDate(f.date);
+  return fmtDate(f.date) + ' ~ ' + fmtDate(f.endDate);
+}
+
 function footCard(f) {
   return `<div class="memory" data-foot="${f.id}" style="cursor:pointer;">
     <div class="head"><span class="name">${esc(f.city)}${f.place ? ' · ' + esc(f.place) : ''}</span>
-      <span class="date">${fmtDate(f.date)} · ${esc(f.type || '')}</span></div>
+      <span class="date">${footDateRange(f)} · ${esc(f.type || '')}</span></div>
     ${f.seen ? `<div class="quote">👀 “${esc(f.seen)}”</div>` : ''}
     ${f.favorite ? `<div class="quote">💖 最喜欢：<b>${esc(f.favorite)}</b></div>` : ''}
     ${f.photoId ? `<div class="pics"><img data-photo="${f.photoId}"></div>` : ''}
@@ -1671,7 +1677,7 @@ function openFootDetail(id) {
     <h3>📍 ${esc(f.city)} <span style="font-size:12px;color:var(--ink-soft);font-weight:600;">共 ${times} 次出发</span></h3>
     <div class="memory" style="margin-bottom:14px;">
       <div class="head"><span class="name">${esc(f.city)}${f.place ? ' · ' + esc(f.place) : ''}</span>
-        <span class="date">${fmtDate(f.date)} · ${esc(f.type || '')}</span></div>
+        <span class="date">${footDateRange(f)} · ${esc(f.type || '')}</span></div>
       <div class="loc">📍 ${esc(f.province || '')} ${esc(f.city)}</div>
       ${f.seen ? `<div class="quote">👀 我看到了：${esc(f.seen)}</div>` : ''}
       ${f.favorite ? `<div class="quote">💖 最喜欢 / 印象最深：<b>${esc(f.favorite)}</b></div>` : ''}
@@ -1718,7 +1724,8 @@ function openFootForm(edit) {
     </div>
     <div class="field"><label>具体地点（可选）</label><input id="ftPlace" value="${esc(edit ? edit.place : '')}" placeholder="例如：黄山风景区"></div>
     <div class="field"><div class="row">
-      <div style="flex:1;"><label>日期</label><input type="date" id="ftDate" value="${edit ? edit.date : todayStr()}" max="${todayStr()}"></div>
+      <div style="flex:1;"><label>出发日期</label><input type="date" id="ftDate" value="${edit ? edit.date : todayStr()}" max="${todayStr()}"></div>
+      <div style="flex:1;"><label>结束日期（多日行程）</label><input type="date" id="ftEndDate" value="${edit ? (edit.endDate || edit.date) : todayStr()}" max="${todayStr()}"></div>
       <div style="flex:1;"><label>类型</label>
         <select id="ftType">${['旅行', '徒步', '亲子游', '比赛出行'].map(t => `<option ${edit && edit.type === t ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
     </div></div>
@@ -1784,7 +1791,8 @@ function openFootForm(edit) {
     }
     const base = {
       city: cityName, province: province, lon: lon, lat: lat, place: $('#ftPlace').value.trim(),
-      date: $('#ftDate').value || todayStr(), type: $('#ftType').value,
+      date: $('#ftDate').value || todayStr(), endDate: $('#ftEndDate').value || $('#ftDate').value || todayStr(),
+      type: $('#ftType').value,
       seen: $('#ftSeen').value.trim(), favorite: $('#ftFav').value.trim(),
       steps: +$('#ftSteps').value || null, photoId: sheetPhotoId
     };
