@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="成长地图">
-<title>袁珞宸的成长地图 · 手机版</title>
+<title>袁珞宸的成长地图</title>
 <style>
 /* 袁珞宸的成长地图 · 样式（按已确认 V3.1 设计稿实现） */
 :root{
@@ -344,34 +344,39 @@ const CITY_LIST = [
 </script>
 <script>
 /* ============================================================
- * 袁珞宸的成长地图 · 数据存储层（双模式）
+ * 袁珞宸的成长地图 · 数据存储层（三模式）
  *
- * 模式自动探测：
- *   remote —— 同源存在 /api/* 家庭云服务（node server.js）：
- *              数据集中存在电脑上，多设备打开同一链接实时同步。
- *   local  —— 探测失败（直接双击打开 index.html）：
- *              数据存本机 localStorage + IndexedDB，可备份迁移。
+ * 优先级自动探测：
+ *   remote —— 同源存在 /api/* 家庭云服务（node server.js，可选）
+ *   cloud  —— 已配置 GitHub Gist 云同步（家长面板里粘贴令牌开启）：
+ *             数据存用户自己的私密 gist，多设备同链接实时同步，
+ *             换手机 / 清缓存 / 重装都不丢。
+ *   local  —— 都未开启：数据存本机（localStorage + IndexedDB）
  *
- * 两种模式对页面暴露同一接口，页面逻辑无需感知差异。
+ * 三种模式对页面暴露同一接口，页面逻辑无需感知差异。
  * ============================================================ */
 
 const DB = (() => {
   const DATA_KEY = 'ycm_data_v1';
+  const CLOUD_KEY = 'ycm_cloud';     // 本机保存的云配置 {token, dataGistId, mediaGistId}
   const PHOTO_DB = 'ycm_photos';
   const PHOTO_STORE = 'photos';
 
-  let MODE = 'local';        // 'remote' | 'local'
-  let lastVersion = 0;       // remote 模式下已知的服务端版本号
+  let MODE = 'local';                // 'remote' | 'cloud' | 'local'
+  let lastVersion = 0;               // remote 模式版本号
+  let cloud = { token: null, dataGistId: null, mediaGistId: null };
+  let cloudError = null;
 
   /* ---------- 默认数据 ---------- */
   function defaultData() {
     return {
       version: 1,
+      updatedAt: null,
       settings: {
         childName: '袁珞宸',
         signature: '袁珞宸独家开发',
         bgPhotoId: null,
-        bgDim: 0.35,
+        bgDim: 0.15,
         pin: null,
         customItems: [],
         checkinItems: ['英语', '数学', '拼音', '练字', '阅读', '运动', '轮滑'],
@@ -401,29 +406,121 @@ const DB = (() => {
     return out;
   }
 
-  /* ---------- 模式探测 ---------- */
+  /* ---------- GitHub API ---------- */
+  function ghHeaders() {
+    return {
+      'Authorization': 'Bearer ' + cloud.token,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async function gh(path, opts = {}) {
+    const r = await fetch('https://api.github.com' + path, Object.assign({ headers: ghHeaders() }, opts));
+    if (!r.ok) {
+      const msg = await r.json().catch(() => ({}));
+      throw new Error('GitHub API ' + r.status + (msg.message ? ': ' + msg.message : ''));
+    }
+    return r.json();
+  }
+
+  /* ---------- 模式探测与初始化 ---------- */
   async function init() {
+    /* 云配置从本机 localStorage 恢复 */
+    try { cloud = Object.assign(cloud, JSON.parse(localStorage.getItem(CLOUD_KEY) || '{}')); } catch (e) {}
+
+    /* 1) 家庭服务器模式（可选，优先） */
     try {
       const ctrl = new AbortController();
-      const tm = setTimeout(() => ctrl.abort(), 1500);
+      const tm = setTimeout(() => ctrl.abort(), 1200);
       const r = await fetch('/api/version', { signal: ctrl.signal });
       clearTimeout(tm);
       if (r.ok) {
         const j = await r.json();
-        if (typeof j.version === 'number') {
-          MODE = 'remote';
-          lastVersion = j.version;
-        }
+        if (typeof j.version === 'number') { MODE = 'remote'; lastVersion = j.version; return; }
       }
-    } catch (e) { /* 保持 local */ }
+    } catch (e) { /* 继续 */ }
+
+    /* 2) Gist 云同步模式 */
+    if (cloud.token && cloud.dataGistId) {
+      try {
+        await cloudPullOrPush();
+        MODE = 'cloud';
+        return;
+      } catch (e) {
+        cloudError = e.message;
+        console.error('云同步初始化失败，暂用本机数据', e);
+      }
+    }
+    /* 3) 本机模式 */
+    MODE = 'local';
   }
 
   const isRemote = () => MODE === 'remote';
+  const isCloud = () => MODE === 'cloud';
+  const getCloudError = () => cloudError;
+
+  /* 云端拉取：远端新则用远端，本地新则推本地 */
+  async function cloudPullOrPush() {
+    const g = await gh('/gists/' + cloud.dataGistId);
+    const f = g.files && g.files['ycm-data.json'];
+    let remote = null;
+    if (f && f.content) {
+      try { remote = JSON.parse(f.content); } catch (e) { remote = null; }
+    }
+    const localRaw = localStorage.getItem(DATA_KEY);
+    const local = localRaw ? mergeDefaults(JSON.parse(localRaw)) : null;
+
+    if (remote && remote.data && (!local || (remote.updatedAt || '') >= (local.updatedAt || ''))) {
+      cache = mergeDefaults(remote.data);
+    } else if (local) {
+      cache = local;
+      await cloudPush();
+    } else {
+      cache = defaultData();
+      await cloudPush();
+    }
+  }
+
+  async function cloudPush() {
+    cache.updatedAt = new Date().toISOString();
+    const body = { files: { 'ycm-data.json': { content: JSON.stringify({ updatedAt: cache.updatedAt, data: cache }) } } };
+    await gh('/gists/' + cloud.dataGistId, { method: 'PATCH', body: JSON.stringify(body) });
+  }
+
+  /* 开启云同步：家长面板粘贴 token 后调用 */
+  async function enableCloud(token) {
+    cloud.token = token;
+    if (!cache) await load();
+    cache.updatedAt = new Date().toISOString();
+    const g = await gh('/gists', {
+      method: 'POST',
+      body: JSON.stringify({
+        description: '袁珞宸的成长地图 · 云端数据（请勿删除）',
+        public: false,
+        files: { 'ycm-data.json': { content: JSON.stringify({ updatedAt: cache.updatedAt, data: cache }) } }
+      })
+    });
+    cloud.dataGistId = g.id;
+    MODE = 'cloud';
+    saveLocal();
+    persistCloudCfg();
+    return g.id;
+  }
+
+  function disableCloud() {
+    cloud = { token: null, dataGistId: null, mediaGistId: null };
+    localStorage.removeItem(CLOUD_KEY);
+    MODE = 'local';
+  }
+
+  function persistCloudCfg() {
+    localStorage.setItem(CLOUD_KEY, JSON.stringify(cloud));
+  }
 
   /* ---------- 结构化数据 ---------- */
   function load() {
     if (cache) return Promise.resolve(cache);
-    if (MODE === 'remote') return loadRemote();
     try {
       const raw = localStorage.getItem(DATA_KEY);
       cache = mergeDefaults(raw ? JSON.parse(raw) : null);
@@ -434,51 +531,92 @@ const DB = (() => {
     return Promise.resolve(cache);
   }
 
+  function saveLocal() {
+    try {
+      localStorage.setItem(DATA_KEY, JSON.stringify(cache));
+    } catch (e) {
+      alert('保存失败：本地存储空间不足。请删除部分照片或旧记录后重试。');
+      throw e;
+    }
+  }
+
+  async function save() {
+    cache.updatedAt = new Date().toISOString();
+    saveLocal();
+    if (MODE === 'remote') {
+      const r = await fetch('/api/state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: cache })
+      });
+      if (!r.ok) throw new Error('家庭云保存失败');
+      lastVersion = (await r.json()).version;
+    } else if (MODE === 'cloud') {
+      try {
+        await cloudPush();
+        cloudError = null;
+      } catch (e) {
+        cloudError = e.message;
+        console.error('云同步推送失败', e);
+        toastSafe('⚠️ 云同步推送失败，数据已存本机，稍后自动重试');
+      }
+    }
+    return true;
+  }
+
+  function toastSafe(msg) { if (typeof toast === 'function') toast(msg); }
+
+  async function getVersion() {
+    if (MODE === 'remote') {
+      try {
+        const r = await fetch('/api/version', { cache: 'no-store' });
+        return (await r.json()).version;
+      } catch (e) { return lastVersion; }
+    }
+    return 0;
+  }
+
+  /* ---------- 同步轮询 ---------- */
+  function startSync(onChange, intervalMs = 5000) {
+    if (MODE === 'remote') {
+      setInterval(async () => {
+        try {
+          const v = await getVersion();
+          if (v !== lastVersion) {
+            lastVersion = v;
+            const data = await loadRemote();
+            onChange && onChange(data);
+          }
+        } catch (e) { }
+      }, intervalMs);
+    } else if (MODE === 'cloud') {
+      setInterval(async () => {
+        try {
+          const g = await gh('/gists/' + cloud.dataGistId);
+          const f = g.files && g.files['ycm-data.json'];
+          if (!f || !f.content) return;
+          const remote = JSON.parse(f.content);
+          if ((remote.updatedAt || '') > (cache.updatedAt || '')) {
+            cache = mergeDefaults(remote.data);
+            saveLocal();
+            onChange && onChange(cache);
+          }
+        } catch (e) { /* 网络抖动，下轮再试 */ }
+      }, intervalMs);
+    }
+  }
+
   async function loadRemote() {
     const r = await fetch('/api/state', { cache: 'no-store' });
     if (!r.ok) throw new Error('家庭云读取失败');
     const j = await r.json();
     lastVersion = j.version || lastVersion;
     cache = mergeDefaults(j.data);
-    try { localStorage.setItem(DATA_KEY, JSON.stringify(cache)); } catch (e) {} // 本地留一份缓存
+    try { localStorage.setItem(DATA_KEY, JSON.stringify(cache)); } catch (e) {}
     return cache;
   }
 
-  function saveLocal() {
-    try {
-      localStorage.setItem(DATA_KEY, JSON.stringify(cache));
-      return Promise.resolve(true);
-    } catch (e) {
-      alert('保存失败：本地存储空间不足。请删除部分照片或旧记录后重试。');
-      return Promise.reject(e);
-    }
-  }
-
-  async function saveRemote() {
-    const r = await fetch('/api/state', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: cache })
-    });
-    if (!r.ok) throw new Error('家庭云保存失败');
-    const j = await r.json();
-    lastVersion = j.version;
-    try { localStorage.setItem(DATA_KEY, JSON.stringify(cache)); } catch (e) {}
-    return true;
-  }
-
-  function save() { return MODE === 'remote' ? saveRemote() : saveLocal(); }
-
-  async function getVersion() {
-    if (MODE !== 'remote') return lastVersion;
-    try {
-      const r = await fetch('/api/version', { cache: 'no-store' });
-      const j = await r.json();
-      return j.version;
-    } catch (e) { return lastVersion; }
-  }
-
-  /* ---------- 照片：local 用 IndexedDB，remote 用家庭云文件 ---------- */
+  /* ---------- 照片：本机 IndexedDB 缓存 + 云 gist 存档 ---------- */
   let pdbPromise = null;
   function pdb() {
     if (!pdbPromise) {
@@ -530,43 +668,49 @@ const DB = (() => {
 
   async function addPhoto(file) {
     const dataUrl = await compressImage(file);
-    if (MODE === 'remote') {
-      const r = await fetch('/api/photo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dataUrl })
-      });
-      if (!r.ok) throw new Error('照片上传失败');
-      const j = await r.json();
-      return j.id;
-    }
     const id = 'p' + Date.now() + Math.floor(Math.random() * 1000);
     await tx(PHOTO_STORE, 'readwrite', s => s.put(dataUrl, id));
+    if (MODE === 'cloud') {
+      try {
+        const body = { files: {} };
+        body.files['photo_' + id + '.txt'] = { content: dataUrl };
+        await gh('/gists/' + cloud.dataGistId, { method: 'PATCH', body: JSON.stringify(body) });
+      } catch (e) { console.error('照片云端备份失败', e); }
+    }
     return id;
   }
 
   function getPhoto(id) {
     if (!id) return Promise.resolve(null);
     if (MODE === 'remote') return Promise.resolve('/api/photo/' + id);
-    return tx(PHOTO_STORE, 'readonly', s => s.get(id));
+    return tx(PHOTO_STORE, 'readonly', s => s.get(id)).then(async local => {
+      if (local) return local;
+      if (MODE === 'cloud') {
+        try {
+          const g = await gh('/gists/' + cloud.dataGistId);
+          const f = g.files && g.files['photo_' + id + '.txt'];
+          if (f && f.content) {
+            await tx(PHOTO_STORE, 'readwrite', s => s.put(f.content, id));
+            return f.content;
+          }
+        } catch (e) { /* 找不到就算了 */ }
+      }
+      return null;
+    });
   }
 
   function deletePhoto(id) {
     if (!id) return Promise.resolve();
-    if (MODE === 'remote') {
-      return fetch('/api/photo/' + id, { method: 'DELETE' }).catch(() => {});
+    const jobs = [tx(PHOTO_STORE, 'readwrite', s => s.delete(id))];
+    if (MODE === 'cloud') {
+      const body = { files: {} };
+      body.files['photo_' + id + '.txt'] = null;
+      jobs.push(gh('/gists/' + cloud.dataGistId, { method: 'PATCH', body: JSON.stringify(body) }).catch(() => {}));
     }
-    return tx(PHOTO_STORE, 'readwrite', s => s.delete(id));
+    return Promise.all(jobs);
   }
 
   function putPhoto(id, dataUrl) {
-    if (MODE === 'remote') {
-      return fetch('/api/photo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dataUrl })
-      }).then(r => r.json()).then(j => j.id || id);
-    }
     return tx(PHOTO_STORE, 'readwrite', s => s.put(dataUrl, id)).then(() => id);
   }
 
@@ -574,21 +718,10 @@ const DB = (() => {
   async function exportBackup() {
     const data = await load();
     const photos = {};
-    if (MODE === 'remote') {
-      const ids = collectPhotoIds(data);
-      for (const id of ids) {
-        try {
-          const blob = await (await fetch('/api/photo/' + id)).blob();
-          photos[id] = await new Promise(res => {
-            const fr = new FileReader();
-            fr.onload = () => res(fr.result);
-            fr.readAsDataURL(blob);
-          });
-        } catch (e) { /* 跳过丢失的照片 */ }
-      }
-    } else {
-      const ids = await tx(PHOTO_STORE, 'readonly', s => s.getAllKeys());
-      for (const id of ids) photos[id] = await tx(PHOTO_STORE, 'readonly', s => s.get(id));
+    const ids = collectPhotoIds(data);
+    for (const id of ids) {
+      const url = await getPhoto(id);
+      if (url) photos[id] = url;
     }
     return { __backup: 'ycm', exportedAt: new Date().toISOString(), data, photos };
   }
@@ -612,22 +745,12 @@ const DB = (() => {
     return true;
   }
 
-  /* 家庭云同步轮询：版本变化（他人或其他设备写入）时回调最新数据 */
-  function startSync(onChange, intervalMs = 4000) {
-    if (MODE !== 'remote') return;
-    setInterval(async () => {
-      try {
-        const v = await getVersion();
-        if (v !== lastVersion) {
-          lastVersion = v;
-          const data = await loadRemote();
-          onChange && onChange(data);
-        }
-      } catch (e) { /* 网络抖动，下一轮再试 */ }
-    }, intervalMs);
-  }
-
-  return { init, isRemote, load, save, addPhoto, getPhoto, deletePhoto, putPhoto, compressImage, getVersion, startSync, exportBackup, importBackup };
+  return {
+    init, isRemote, isCloud, getCloudError, enableCloud, disableCloud,
+    get cloudCfg() { return cloud; },
+    load, save, addPhoto, getPhoto, deletePhoto, putPhoto, compressImage,
+    getVersion, startSync, exportBackup, importBackup
+  };
 })();
 
 </script>
@@ -724,7 +847,7 @@ async function renderHome() {
 
   const books = bookStats();
   const syncPill = $('#syncPill');
-  if (syncPill) syncPill.innerHTML = `<i class="sync-dot"></i>${DB.isRemote() ? '家庭云 · 多设备实时同步' : '本机已保存 · 可备份迁移'}`;
+  if (syncPill) syncPill.innerHTML = `<i class="sync-dot"></i>${DB.isCloud() ? '☁️ 云端已同步' : DB.isRemote() ? '家庭云 · 多设备实时同步' : '本机已保存 · 可备份迁移'}`;
   const todayDone = S.checkins.filter(c => c.date === todayStr() && c.done).length;
   const todayTotal = st.checkinItems.length + st.customItems.length;
   const honorN = S.honors.length;
@@ -1508,6 +1631,7 @@ function showParentPanel() {
     <h3>👨‍👩‍👧 家长校准 <span class="parent-badge">家长模式</span></h3>
     <div class="muted" style="margin-bottom:12px;">修改不会覆盖孩子最初写的原始内容，原始内容会保留在记录里。</div>
     <div class="chips" style="margin-bottom:14px;">
+      <button class="chip ${DB.isCloud() ? 'on' : ''}" id="pfCloud">${DB.isCloud() ? '☁️ 云同步·已开启' : '☁️ 云同步'}</button>
       <button class="chip" id="pfExport">📤 导出中心</button>
       <button class="chip ${!DB.isRemote() && (backupDays === null || backupDays > 7) ? 'on' : ''}" id="pfBackup">${backupLabel}</button>
       <button class="chip" id="pfRestore">📥 恢复备份</button>
@@ -1529,6 +1653,7 @@ function showParentPanel() {
   `);
 
   $('#pfExit').onclick = () => { PARENT = false; closeSheet(); toast('已回到孩子模式'); refresh(); };
+  $('#pfCloud').onclick = openCloudSheet;
   $('#pfExport').onclick = () => { closeSheet(); openExportCenter(); };
   $('#pfPin').onclick = () => {
     const p = prompt('设置 4 位家长密码（留空则取消密码）：', S.settings.pin || '');
@@ -1597,6 +1722,62 @@ function showParentPanel() {
     else if (it.ref.type === 'foot') { if (it.ref.f.photoId) DB.deletePhoto(it.ref.f.photoId); S.footprints = S.footprints.filter(x => x.id !== it.ref.f.id); }
     await save(); closeSheet(); refresh(); toast('已删除');
   });
+}
+
+/* ---------- 云同步设置（GitHub Gist） ---------- */
+function openCloudSheet() {
+  if (DB.isCloud()) {
+    const cfg = DB.cloudCfg;
+    const err = DB.getCloudError();
+    openSheet(`
+      <h3>☁️ 云同步 · 已开启</h3>
+      <div class="muted" style="margin-bottom:12px;">
+        数据正自动同步到你的 GitHub 私密云端，换手机、换浏览器打开同一个链接，数据都会在。<br>
+        云端编号：${esc(String(cfg.dataGistId || '').slice(0, 12))}…<br>
+        ${err ? `<span style="color:#e05a4e;">⚠️ 最近同步出错：${esc(err)}</span>` : '✅ 最近同步正常'}
+      </div>
+      <div class="muted" style="margin-bottom:14px;font-size:12px;">💡 新设备同步方法：用同一部手机/浏览器先打开链接，长按星星 → ☁️ 云同步 → 粘贴同一个令牌即可。令牌就是之前粘贴过的那一串 ghp_ 开头的字符。</div>
+      <div class="sheet-actions"><button class="cta cancel" onclick="closeSheet()">返回</button><button class="cta" id="cloudOff">⏹ 停止云同步</button></div>
+    `);
+    $('#cloudOff').onclick = () => {
+      if (!confirm('停止后数据只保存在本机（可能丢失），确定停止云同步吗？')) return;
+      DB.disableCloud();
+      closeSheet(); refresh();
+      toast('云同步已停止，数据仅存本机');
+    };
+    return;
+  }
+  openSheet(`
+    <h3>☁️ 开启云同步</h3>
+    <div class="muted" style="margin-bottom:12px;">
+      开启后，孩子的所有记录和照片都会自动备份到<strong>你自己的 GitHub 私密空间</strong>（别人看不到），换手机、清缓存都不会丢数据。<br><br>
+      只需两步：<br>
+      1️⃣ 电脑或手机浏览器打开 <span style="color:#4a7dd8;">github.com/settings/tokens</span> → Generate new token (classic) → 勾选 <strong>gist</strong> 一项 → 生成并复制 <strong>ghp_ 开头的令牌</strong><br>
+      2️⃣ 把令牌粘贴到下面 → 点「开启」<br><br>
+      🔒 令牌只保存在你自己的设备上，建议只在爸爸/妈妈的手机上开启。
+    </div>
+    <div class="field"><label>GitHub 令牌（ghp_ 开头）</label>
+      <input id="cloudToken" type="password" placeholder="ghp_..." autocomplete="off" style="width:100%;"></div>
+    <div class="sheet-actions"><button class="cta cancel" onclick="closeSheet()">取消</button><button class="cta" id="cloudGo">开启云同步</button></div>
+  `);
+  $('#cloudGo').onclick = async () => {
+    const t = $('#cloudToken').value.trim();
+    if (!/^gh[pousr]_[A-Za-z0-9]{30,}$/.test(t)) { alert('令牌格式不对，应该是 ghp_ 开头的一长串字符'); return; }
+    $('#cloudGo').textContent = '连接中…';
+    $('#cloudGo').disabled = true;
+    try {
+      await DB.enableCloud(t);
+      closeSheet(); refresh();
+      toast('🎉 云同步已开启！数据已备份到你的 GitHub');
+    } catch (e) {
+      $('#cloudGo').textContent = '开启云同步';
+      $('#cloudGo').disabled = false;
+      const msg = /401/.test(e.message) ? '令牌无效或已过期，请重新生成'
+        : /403|429/.test(e.message) ? '请求被限制，请稍后再试'
+        : e.message;
+      alert('开启失败：' + msg);
+    }
+  };
 }
 
 function refresh() {
