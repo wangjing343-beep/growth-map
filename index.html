@@ -488,10 +488,64 @@ const DB = (() => {
     await gh('/gists/' + cloud.dataGistId, { method: 'PATCH', body: JSON.stringify(body) });
   }
 
-  /* 开启云同步：家长面板粘贴 token 后调用 */
+  /* 统计一份数据里的记录总数，用于比较哪份云端数据更"富" */
+  function dataScore(d) {
+    if (!d) return -1;
+    return (d.books || []).length + (d.honors || []).length + (d.checkins || []).length + (d.footprints || []).length;
+  }
+
+  /* 读取 gist 里 ycm-data.json 的内容（大文件时 content 为空，需再取 raw_url） */
+  async function fetchGistData(gist) {
+    const f = gist.files && gist.files['ycm-data.json'];
+    if (!f) return null;
+    let raw = f.content;
+    if (!raw && f.raw_url) {
+      const r = await fetch(f.raw_url, { headers: ghHeaders() });
+      if (!r.ok) return null;
+      raw = await r.text();
+    }
+    try { return JSON.parse(raw); } catch (e) { return null; }
+  }
+
+  /* 查找账号下已有的成长地图云端，返回数据最丰富的那一个 */
+  async function findExistingCloudGist() {
+    const r = await gh('/gists?per_page=100');
+    const list = Array.isArray(r) ? r : [];
+    const cands = list.filter(g => g.files && g.files['ycm-data.json'] && (g.description || '').indexOf('成长地图') >= 0);
+    let best = null, bestScore = -1;
+    for (const g of cands) {
+      const parsed = await fetchGistData(g).catch(() => null);
+      const score = dataScore(parsed && parsed.data);
+      if (score > bestScore) { bestScore = score; best = g; }
+    }
+    return best;
+  }
+
+  /* 开启云同步：家长面板粘贴 token 后调用。
+     若账号下已有成长地图云端，直接采用它并恢复数据（多设备开同一朵云）；
+     没有才新建。 */
   async function enableCloud(token) {
     cloud.token = token;
     if (!cache) await load();
+    let adopted = null;
+    try { adopted = await findExistingCloudGist(); } catch (e) { /* 查找失败就按新建处理 */ }
+    if (adopted) {
+      cloud.dataGistId = adopted.id;
+      MODE = 'cloud';
+      saveLocal();
+      persistCloudCfg();
+      /* 用记录数比较：云端更富则拉云端，本地更富则推本地（避免把空数据覆盖上去） */
+      const parsed = await fetchGistData(adopted).catch(() => null);
+      const remoteData = parsed && parsed.data ? mergeDefaults(parsed.data) : null;
+      if (remoteData && dataScore(remoteData) >= dataScore(cache)) {
+        cache = remoteData;
+        cache.updatedAt = new Date().toISOString();
+        saveLocal();
+      } else {
+        await cloudPush();
+      }
+      return { id: adopted.id, adopted: true };
+    }
     cache.updatedAt = new Date().toISOString();
     const g = await gh('/gists', {
       method: 'POST',
@@ -505,7 +559,7 @@ const DB = (() => {
     MODE = 'cloud';
     saveLocal();
     persistCloudCfg();
-    return g.id;
+    return { id: g.id, adopted: false };
   }
 
   function disableCloud() {
@@ -1766,9 +1820,9 @@ function openCloudSheet() {
     $('#cloudGo').textContent = '连接中…';
     $('#cloudGo').disabled = true;
     try {
-      await DB.enableCloud(t);
+      const res = await DB.enableCloud(t);
       closeSheet(); refresh();
-      toast('🎉 云同步已开启！数据已备份到你的 GitHub');
+      toast(res && res.adopted ? '🎉 已连接到你的云端，数据恢复中！' : '🎉 云同步已开启！数据已备份到你的 GitHub');
     } catch (e) {
       $('#cloudGo').textContent = '开启云同步';
       $('#cloudGo').disabled = false;
