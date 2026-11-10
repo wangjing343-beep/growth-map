@@ -570,7 +570,9 @@ const DB = (() => {
     for (const g of list) {
       if (!g.files || !g.files['ycm-data.json']) continue;
       if ((g.description || '').indexOf('成长地图') < 0) continue;
-      const parsed = await fetchGistData(g).catch(() => null);
+      /* 列表接口不返回文件内容，必须逐个取详情 */
+      const full = await gh('/gists/' + g.id).catch(() => g);
+      const parsed = await fetchGistData(full).catch(() => null);
       const d = parsed && parsed.data ? mergeDefaults(parsed.data) : null;
       out.push({
         id: g.id,
@@ -869,7 +871,7 @@ const DB = (() => {
 
 let S = null;              // 全局数据
 let PARENT = false;        // 家长模式
-const APP_VERSION = 'v1.4';
+const APP_VERSION = 'v1.5';
 let currentPage = 'home';
 let booksFilter = { mode: 'all', year: null };
 let honorsFilter = 'all';
