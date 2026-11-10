@@ -562,6 +562,57 @@ const DB = (() => {
     return { id: g.id, adopted: false };
   }
 
+  /* 诊断：列出账号下所有成长地图云端及各自的数据量 */
+  async function listCloudGists() {
+    const r = await gh('/gists?per_page=100');
+    const list = Array.isArray(r) ? r : [];
+    const out = [];
+    for (const g of list) {
+      if (!g.files || !g.files['ycm-data.json']) continue;
+      if ((g.description || '').indexOf('成长地图') < 0) continue;
+      const parsed = await fetchGistData(g).catch(() => null);
+      const d = parsed && parsed.data ? mergeDefaults(parsed.data) : null;
+      out.push({
+        id: g.id,
+        updatedAt: (parsed && parsed.updatedAt) || g.updated_at || '',
+        books: d ? d.books.length : 0,
+        honors: d ? d.honors.length : 0,
+        checkins: d ? d.checkins.length : 0,
+        footprints: d ? d.footprints.length : 0,
+        score: dataScore(d),
+        current: g.id === cloud.dataGistId
+      });
+    }
+    out.sort((a, b) => (b.current ? 1 : 0) - (a.current ? 1 : 0) || b.score - a.score);
+    return out;
+  }
+
+  /* 手动连接到指定云端：云端数据多则拉取，本地多则推送 */
+  async function connectCloudGist(gistId) {
+    if (!cloud.token) throw new Error('尚未登录 GitHub');
+    const prevId = cloud.dataGistId;
+    cloud.dataGistId = gistId;
+    MODE = 'cloud';
+    try {
+      const g = await gh('/gists/' + gistId);
+      const parsed = await fetchGistData(g).catch(() => null);
+      const remoteData = parsed && parsed.data ? mergeDefaults(parsed.data) : null;
+      if (remoteData && dataScore(remoteData) >= dataScore(cache)) {
+        cache = remoteData;
+        cache.updatedAt = new Date().toISOString();
+        saveLocal();
+      } else {
+        await cloudPush();
+      }
+      persistCloudCfg();
+      return true;
+    } catch (e) {
+      cloud.dataGistId = prevId;
+      persistCloudCfg();
+      throw e;
+    }
+  }
+
   function disableCloud() {
     cloud = { token: null, dataGistId: null, mediaGistId: null };
     localStorage.removeItem(CLOUD_KEY);
@@ -801,6 +852,7 @@ const DB = (() => {
 
   return {
     init, isRemote, isCloud, getCloudError, enableCloud, disableCloud,
+    listCloudGists, connectCloudGist,
     get cloudCfg() { return cloud; },
     load, save, addPhoto, getPhoto, deletePhoto, putPhoto, compressImage,
     getVersion, startSync, exportBackup, importBackup
@@ -817,6 +869,7 @@ const DB = (() => {
 
 let S = null;              // 全局数据
 let PARENT = false;        // 家长模式
+const APP_VERSION = 'v1.4';
 let currentPage = 'home';
 let booksFilter = { mode: 'all', year: null };
 let honorsFilter = 'all';
@@ -1703,6 +1756,7 @@ function showParentPanel() {
         <button class="btn-mini warn" data-caldel="${i}">🗑️</button>
       </div>`).join('') || '<div class="muted">还没有任何记录</div>'}
     </div>
+    <div class="muted" style="font-size:11px;text-align:center;margin-top:8px;">成长地图 ${APP_VERSION}${DB.isCloud() ? ' · ☁️ 已连接云端' : ''}</div>
     <div class="sheet-actions"><button class="cta cancel" id="pfExit">退出家长模式</button></div>
   `);
 
@@ -1786,13 +1840,19 @@ function openCloudSheet() {
     openSheet(`
       <h3>☁️ 云同步 · 已开启</h3>
       <div class="muted" style="margin-bottom:12px;">
-        数据正自动同步到你的 GitHub 私密云端，换手机、换浏览器打开同一个链接，数据都会在。<br>
-        云端编号：${esc(String(cfg.dataGistId || '').slice(0, 12))}…<br>
+        数据正自动同步到你的 GitHub 私密云端。<br>
+        当前云端编号：${esc(String(cfg.dataGistId || '').slice(0, 12))}…<br>
         ${err ? `<span style="color:#e05a4e;">⚠️ 最近同步出错：${esc(err)}</span>` : '✅ 最近同步正常'}
       </div>
-      <div class="muted" style="margin-bottom:14px;font-size:12px;">💡 新设备同步方法：用同一部手机/浏览器先打开链接，长按星星 → ☁️ 云同步 → 粘贴同一个令牌即可。令牌就是之前粘贴过的那一串 ghp_ 开头的字符。</div>
-      <div class="sheet-actions"><button class="cta cancel" onclick="closeSheet()">返回</button><button class="cta" id="cloudOff">⏹ 停止云同步</button></div>
+      <div class="sheet-actions" style="flex-direction:column;gap:8px;">
+        <button class="cta" id="cloudDiag">🔍 云端诊断（多设备数据不一致时用）</button>
+        <div style="display:flex;gap:8px;">
+          <button class="cta cancel" style="flex:1;" onclick="closeSheet()">返回</button>
+          <button class="cta" style="flex:1;background:#e05a4e;" id="cloudOff">⏹ 停止云同步</button>
+        </div>
+      </div>
     `);
+    $('#cloudDiag').onclick = openCloudDiag;
     $('#cloudOff').onclick = () => {
       if (!confirm('停止后数据只保存在本机（可能丢失），确定停止云同步吗？')) return;
       DB.disableCloud();
@@ -1832,6 +1892,40 @@ function openCloudSheet() {
       alert('开启失败：' + msg);
     }
   };
+}
+
+/* ---------- 云端诊断：列出所有云端，一键切换 ---------- */
+async function openCloudDiag() {
+  openSheet(`
+    <h3>🔍 云端诊断</h3>
+    <div class="muted" style="margin-bottom:12px;">正在读取你 GitHub 账号下的所有成长地图云端…<br>每一行就是一个独立的"保险箱"。哪行数据多，就点哪行的「连接到此云端」。</div>
+    <div id="diagList" class="muted" style="text-align:center;padding:20px 0;">⏳ 读取中…</div>
+    <div class="sheet-actions"><button class="cta cancel" onclick="closeSheet()">返回</button></div>
+  `);
+  try {
+    const list = await DB.listCloudGists();
+    if (!list.length) {
+      $('#diagList').innerHTML = '没有找到任何云端。请先在一台设备上开启云同步。';
+      return;
+    }
+    $('#diagList').innerHTML = `<div style="display:flex;flex-direction:column;gap:10px;text-align:left;">` + list.map((g, i) => `
+      <div style="background:${g.current ? 'rgba(90,160,90,.15)' : 'rgba(0,0,0,.05)'};border:1px solid ${g.current ? '#5aa05a' : 'transparent'};border-radius:12px;padding:10px 12px;">
+        <div style="font-weight:700;font-size:13px;">${g.current ? '✅ 当前连接' : '云端 ' + (i + 1)} <span style="font-weight:400;color:#888;font-size:11px;">#${esc(g.id.slice(0, 8))}</span></div>
+        <div style="font-size:12px;margin:4px 0;">📚 ${g.books} 本 · 🏆 ${g.honors} 枚 · ✅ ${g.checkins} 次 · 👣 ${g.footprints} 条</div>
+        <div style="font-size:11px;color:#888;">更新于 ${g.updatedAt ? g.updatedAt.replace('T', ' ').slice(0, 16) : '未知'}</div>
+        ${g.current ? '' : `<button class="cta" style="margin-top:8px;width:100%;padding:8px;font-size:13px;" data-connect="${esc(g.id)}">连接到此云端</button>`}
+      </div>`).join('') + `</div>`;
+    $$('#diagList [data-connect]').forEach(b => b.onclick = async () => {
+      b.textContent = '连接中…'; b.disabled = true;
+      try {
+        await DB.connectCloudGist(b.dataset.connect);
+        closeSheet(); refresh();
+        toast('🎉 已切换云端，数据已更新');
+      } catch (e) { alert('连接失败：' + e.message); b.textContent = '连接到此云端'; b.disabled = false; }
+    });
+  } catch (e) {
+    $('#diagList').innerHTML = `读取失败：${esc(e.message)}<br><br>请检查网络或令牌权限（需勾选 gist）`;
+  }
 }
 
 function refresh() {
