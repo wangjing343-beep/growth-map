@@ -45,10 +45,10 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink);}
 .home-bg{position:absolute;inset:0;background:linear-gradient(160deg,#8FC7E8 0%,#BFE0C8 55%,#F6E7A8 100%);background-size:cover;background-position:center;}
 .home-bg .dim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(30,40,60,.08),rgba(30,40,60,.45));}
 .home-content{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;flex:1;padding:14px 16px 90px;overflow-y:auto;}
-.home-status{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.35);}
+.home-status{display:flex;justify-content:flex-end;align-items:center;font-size:12px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.35);}
 .sync-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.3);color:#fff;font-size:11px;border-radius:999px;padding:3px 10px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.3);}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:#8EF0B2;}
-.greet{background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.55);border-radius:18px;padding:16px 16px 36px;position:relative;backdrop-filter:blur(3px);}
+.greet{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.4);border-radius:18px;padding:16px 16px 34px;position:relative;backdrop-filter:blur(2px);}
 .greet .kicker{font-size:10px;letter-spacing:2px;color:#FFE9B8;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.3);}
 .greet .big{font-size:21px;font-weight:800;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.35);padding-right:64px;margin-top:2px;}
 .greet .m2{font-size:11px;color:rgba(255,255,255,.95);margin-top:5px;text-shadow:0 1px 6px rgba(0,0,0,.4);padding-right:64px;line-height:1.6;}
@@ -58,19 +58,19 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink);}
 @keyframes starGlow{0%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(255,215,80,0));}100%{transform:scale(1.35);filter:drop-shadow(0 0 14px rgba(255,215,80,.95));}}
 .planet{width:42px;height:42px;border-radius:50%;position:absolute;right:12px;top:10px;background:radial-gradient(circle at 32% 30%,#FFD86B,#F5A623 70%);box-shadow:0 4px 10px rgba(0,0,0,.2);}
 .planet::after{content:"";position:absolute;inset:-5px -8px;border:2px solid rgba(255,255,255,.6);border-radius:50%;transform:rotate(-18deg);}
-.bg-btn{position:absolute;left:16px;bottom:10px;font-size:11px;color:#fff;background:rgba(0,0,0,.3);border-radius:999px;padding:4px 10px;font-weight:600;}
+.bg-btn{position:absolute;left:16px;bottom:10px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;background:rgba(0,0,0,.28);border-radius:50%;}
 .parent-progress{position:absolute;left:0;bottom:0;height:3px;background:#FFD75E;width:0%;border-radius:3px;}
 /* 首页入口卡片 */
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
-.tile{border-radius:16px;padding:13px 12px;min-height:84px;display:flex;flex-direction:column;justify-content:space-between;background:rgba(255,255,255,.88);box-shadow:0 3px 10px rgba(0,0,0,.06);text-align:left;}
+.tile{border-radius:18px;padding:16px 13px;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;background:rgba(255,255,255,.55);backdrop-filter:blur(8px);box-shadow:0 3px 10px rgba(0,0,0,.05);text-align:left;}
 .tile:active{transform:scale(.97);}
-.tile .icon{font-size:22px;}
-.tile .name{font-size:14px;font-weight:800;margin-top:6px;}
-.tile .meta{font-size:11px;color:var(--ink-soft);margin-top:2px;}
-.t-yellow{background:rgba(255,243,214,.92);} .t-blue{background:rgba(234,243,255,.92);}
-.t-green{background:rgba(232,247,236,.92);} .t-pink{background:rgba(253,238,240,.92);}
+.tile .icon{font-size:24px;}
+.tile .name{font-size:15px;font-weight:800;margin-top:8px;}
+.tile .meta{font-size:11px;color:var(--ink-soft);margin-top:3px;}
+.t-yellow{background:rgba(255,243,214,.55);} .t-blue{background:rgba(234,243,255,.55);}
+.t-green{background:rgba(232,247,236,.55);} .t-pink{background:rgba(253,238,240,.55);}
 /* 首页进度与提示 */
-.home-card{background:rgba(255,255,255,.88);border-radius:16px;padding:14px;box-shadow:0 3px 10px rgba(0,0,0,.06);}
+.home-card{background:rgba(255,255,255,.6);backdrop-filter:blur(8px);border-radius:16px;padding:14px;box-shadow:0 3px 10px rgba(0,0,0,.05);}
 .home-card .row1{display:flex;justify-content:space-between;font-size:13px;font-weight:800;}
 .bar{height:9px;border-radius:99px;background:#F2EADA;margin-top:10px;overflow:hidden;}
 .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#F5A623,#FFC95C);transition:width .5s;}
@@ -176,6 +176,12 @@ h2.title{font-size:20px;line-height:1.3;margin-top:2px;}
 .memory .pics{margin-top:7px;display:flex;gap:6px;flex-wrap:wrap;}
 .memory .pics img{width:56px;height:56px;border-radius:8px;object-fit:cover;}
 .memory .steps{font-size:10px;color:var(--ink-soft);margin-top:6px;}
+/* 南海诸岛淡化角标（合规要求保留，视觉弱化） */
+.inset-group{opacity:.35;}
+/* 打卡月度柱状图 */
+.daybars{display:flex;align-items:flex-end;gap:2px;height:64px;margin-top:10px;padding:0 2px;}
+.daybars i{flex:1;background:var(--accent-2);border-radius:2px;min-height:3px;opacity:.75;}
+.daybar-axis{display:flex;justify-content:space-between;font-size:9px;color:var(--ink-soft);margin-top:4px;}
 
 /* 表单弹层 */
 .overlay{position:fixed;inset:0;background:rgba(30,25,10,.5);z-index:100;display:none;align-items:flex-end;justify-content:center;}
@@ -236,7 +242,6 @@ h2.title{font-size:20px;line-height:1.3;margin-top:2px;}
     <div class="home-bg" id="homeBg"><div class="dim"></div></div>
     <div class="home-content">
       <div class="home-status">
-        <span>成长地图</span>
         <span class="sync-pill" id="syncPill"><i class="sync-dot"></i>本机已保存</span>
       </div>
       <div class="greet">
@@ -245,7 +250,7 @@ h2.title{font-size:20px;line-height:1.3;margin-top:2px;}
         <div class="m2" id="homeMeta">今天也有一点点长大 ⭐</div>
         <button class="star-btn" id="starBtn" title="长按3秒进入家长模式">⭐<span class="parent-progress" id="parentProgress"></span></button>
         <div class="planet"></div>
-        <button class="bg-btn" id="bgBtn">🖼️ 换全屏背景照片</button>
+        <button class="bg-btn" id="bgBtn" title="更换背景照片">🖼️</button>
       </div>
       <div class="grid2">
         <button class="tile t-blue" onclick="showPage('books')"><span class="icon">📚</span><span class="name">我的书单</span><span class="meta" id="tileBooks">已读 0 本</span></button>
@@ -259,7 +264,6 @@ h2.title{font-size:20px;line-height:1.3;margin-top:2px;}
         <div class="home-tip" id="homeTip">💬</div>
       </div>
       <div style="flex:1;"></div>
-      <div class="home-foot" id="homeFoot">袁珞宸独家开发 · v1.0</div>
     </div>
   </section>
 
@@ -640,6 +644,7 @@ let currentPage = 'home';
 let booksFilter = { mode: 'all', year: null };
 let honorsFilter = 'all';
 let selectedFootprint = null;
+let checkinMonth = null;   // 打卡月度视图：'YYYY-MM'，null = 当前月
 let longPressTimer = null;
 
 /* ---------- 工具 ---------- */
@@ -715,7 +720,7 @@ async function renderHome() {
   } else {
     bg.style.backgroundImage = '';
   }
-  $('.home-bg .dim').style.background = `linear-gradient(180deg,rgba(30,40,60,.08),rgba(30,40,60,${0.15 + st.bgDim}))`;
+  $('.home-bg .dim').style.background = `linear-gradient(180deg,rgba(30,40,60,.04),rgba(30,40,60,${0.04 + st.bgDim * 0.6}))`;
 
   const books = bookStats();
   const syncPill = $('#syncPill');
@@ -897,16 +902,40 @@ function bindBooks() {
 async function tapVolume(bookId, vol) {
   const b = S.books.find(x => x.id === bookId);
   if (!b) return;
-  const rec = b.records.find(r => r.volume === vol);
-  if (rec) {
-    if (!PARENT) { toast(`第${vol}册已在 ${fmtDate(rec.date)} 读完 ✅`); return; }
-    if (confirm(`删除第${vol}册的打卡记录？`)) {
-      b.records = b.records.filter(r => r !== rec);
-      if (rec.photoId) DB.deletePhoto(rec.photoId);
-      await save(); renderBooks();
-    }
+  const volRecs = b.records.filter(r => r.volume === vol);
+  if (volRecs.length) {
+    /* 已读过：展示该册全部阅读记录，支持再读一次 */
+    openSheet(`
+      <h3>📖 ${esc(b.title)} 第${vol}册</h3>
+      <div class="muted" style="margin-bottom:12px;">这一册已经读过 ${volRecs.length} 次，每次阅读都会记录下来</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+        ${volRecs.slice().sort((a, b2) => (b2.date || '').localeCompare(a.date || '')).map(r => `
+          <div class="memory"><div class="head">
+            <span class="name" style="font-size:12px;color:var(--ink);">${r.date === todayStr() ? '今天' : fmtDate(r.date)}读完</span>
+            ${PARENT ? `<button class="btn-mini warn" data-vdel="${esc(r.createdAt || r.date)}">删除</button>` : ''}
+          </div>
+          ${r.note ? `<div class="quote">💬 ${esc(r.note)}</div>` : ''}
+          ${r.photoId ? `<div class="pics"><img data-photo="${r.photoId}"></div>` : ''}</div>`).join('')}
+      </div>
+      <button class="cta green" id="volReread">🔁 第${vol}册我又读了一遍（+1次）</button>
+    `);
+    hydratePhotos();
+    $('#volReread').onclick = async () => {
+      b.records.push({ date: todayStr(), volume: vol, note: '', photoId: null, createdAt: new Date().toISOString() });
+      await save(); closeSheet(); celebrate(); renderBooks();
+      toast(`第${vol}册阅读次数 +1 🔥`);
+    };
+    $$('#sheetBody [data-vdel]').forEach(btn => btn.onclick = async () => {
+      const r = volRecs.find(x => (x.createdAt || x.date) === btn.dataset.vdel);
+      if (r && confirm(`删除 ${fmtDate(r.date)} 这条阅读记录？`)) {
+        b.records = b.records.filter(x => x !== r);
+        if (r.photoId) DB.deletePhoto(r.photoId);
+        await save(); closeSheet(); renderBooks();
+      }
+    });
     return;
   }
+  /* 未读过：打卡点亮 */
   openSheet(`
     <h3>🐾 打卡完成：${esc(b.title)} 第${vol}册</h3>
     <div class="field"><label>读完日期</label><input type="date" id="volDate" value="${todayStr()}" max="${todayStr()}"></div>
@@ -1152,6 +1181,55 @@ async function renderCheckin() {
   const wkRate = wkTotal ? Math.round(wkDone / wkTotal * 100) : 0;
   const monthMinutes = S.checkins.filter(c => c.done && c.minutes && c.date.startsWith(today.slice(0, 7))).reduce((s, c) => s + c.minutes, 0);
 
+  /* ===== 月度趋势与沉淀对比 ===== */
+  const now = new Date();
+  if (!checkinMonth) checkinMonth = today.slice(0, 7);
+  const [my, mm] = checkinMonth.split('-').map(Number);
+  const daysInMonth = new Date(my, mm, 0).getDate();
+  const isCurrentMonth = checkinMonth === today.slice(0, 7);
+  const elapsedDays = isCurrentMonth ? now.getDate() : daysInMonth;
+  const mRecs = S.checkins.filter(c => c.done && c.date.startsWith(checkinMonth));
+  const mDone = mRecs.length;
+  const mMin = mRecs.reduce((s, c) => s + (c.minutes || 0), 0);
+  const mRate2 = items.length && elapsedDays ? Math.min(100, Math.round(mDone / (items.length * elapsedDays) * 100)) : 0;
+  const mDayCount = new Set(mRecs.map(c => c.date)).size;
+  const daily = {};
+  mRecs.forEach(c => { daily[c.date] = (daily[c.date] || 0) + 1; });
+  const maxDaily = Math.max(1, ...Object.values(daily));
+  const prevMonth = mm === 1 ? (my - 1) + '-12' : my + '-' + String(mm - 1).padStart(2, '0');
+  const pRecs = S.checkins.filter(c => c.done && c.date.startsWith(prevMonth));
+  const pMin = pRecs.reduce((s, c) => s + (c.minutes || 0), 0);
+  const minDiff = mMin - pMin;
+  const monthLabel = checkinMonth.replace('-', '年') + '月';
+  const monthCardHtml = `
+    <div class="card">
+      <div class="chips" style="margin-bottom:4px;">
+        <button class="chip" id="mPrev">‹</button>
+        <button class="chip on" style="min-width:96px;text-align:center;">📊 ${monthLabel}</button>
+        <button class="chip" id="mNext" ${isCurrentMonth ? 'style="opacity:.4;"' : ''}>›</button>
+        ${!isCurrentMonth ? '<button class="chip" id="mNow">回到本月</button>' : ''}
+      </div>
+      <div class="stat-quad">
+        <div class="stat-box t-green"><div class="num">${mDayCount}<span> 天</span></div><div class="lab">打卡天数</div></div>
+        <div class="stat-box t-yellow"><div class="num">${mDone}<span> 项</span></div><div class="lab">完成项目</div></div>
+        <div class="stat-box t-blue"><div class="num">${mMin}<span> 分</span></div><div class="lab">累计用时</div></div>
+        <div class="stat-box t-pink"><div class="num">${mRate2}<span> %</span></div><div class="lab">完成率</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--ink-soft);margin-top:12px;font-weight:700;">每日完成情况（高峰 ${maxDaily} 项/天）</div>
+      <div class="daybars">${Array.from({ length: daysInMonth }, (_, i) => {
+        const ds = checkinMonth + '-' + String(i + 1).padStart(2, '0');
+        const v = daily[ds] || 0;
+        const h = Math.round(v / maxDaily * 100);
+        const future = isCurrentMonth && i + 1 > now.getDate();
+        return `<i style="height:${future ? 2 : Math.max(4, h)}%;${ds === today ? 'background:var(--accent);opacity:1;' : ''}${future ? 'background:#EFE8D5;' : ''}" title="${i + 1}日 ${v} 项"></i>`;
+      }).join('')}</div>
+      <div class="daybar-axis"><span>1</span><span>${Math.round(daysInMonth / 2)}</span><span>${daysInMonth}</span></div>
+      <div class="muted" style="margin-top:10px;">
+        📊 对比${prevMonth.replace('-', '年')}月：用时 <b style="color:${minDiff >= 0 ? 'var(--accent-3)' : 'var(--danger);'};">${minDiff >= 0 ? '+' : ''}${minDiff}</b> 分钟
+        （上月 ${pMin} 分钟）· 完成项目 ${mDone} 项（上月 ${pRecs.length} 项）
+      </div>
+    </div>`;
+
   let html = `<div class="medal-hero" style="background:var(--green);">
       <div class="medal-ball" style="background:radial-gradient(circle at 32% 30%,#BFF0CD,#5CB878 75%);"></div>
       <div><div style="font-size:20px;font-weight:900;">今日已完成 ${doneN} / ${items.length}</div>
@@ -1181,7 +1259,24 @@ async function renderCheckin() {
         </div>`).join('')}
     </div>
     <div class="card muted">📅 本月已累计 <b style="color:var(--accent);">${monthMinutes}</b> 分钟 · 哪个项目坚持最好，哪个月容易中断，家长模式可查看完整数据</div>
+    ${monthCardHtml}
     ${PARENT ? `<div class="chips"><button class="chip" id="expCheckinCsv">📤 导出打卡Excel</button><button class="chip" id="expCheckinPdf">🖨️ 打印PDF</button></div>` : ''}`;
+
+  /* 月度趋势：切换月份 */
+  const goMonth = (delta) => {
+    const [y, m] = (checkinMonth || todayStr().slice(0, 7)).split('-').map(Number);
+    let ny = y, nm = m + delta;
+    if (nm < 1) { nm = 12; ny--; }
+    if (nm > 12) { nm = 1; ny++; }
+    const nowM = todayStr().slice(0, 7);
+    if (ny + '-' + String(nm).padStart(2, '0') > nowM) return; // 不能看未来
+    checkinMonth = ny + '-' + String(nm).padStart(2, '0');
+    renderCheckin();
+  };
+  const prev = $('#mPrev'), next = $('#mNext'), nowBtn = $('#mNow');
+  if (prev) prev.onclick = () => goMonth(-1);
+  if (next) next.onclick = () => goMonth(1);
+  if (nowBtn) nowBtn.onclick = () => { checkinMonth = todayStr().slice(0, 7); renderCheckin(); };
 
   $('#page-checkin').innerHTML = `
     <div><div class="kicker">TODAY'S QUEST</div><h2 class="title">今日打卡</h2>
@@ -1226,36 +1321,25 @@ async function renderFeet() {
   const cities = new Set(S.footprints.map(f => f.city));
 
   let pins = '';
-  lit.forEach((f, i) => {
+  lit.forEach(f => {
     const p = projectCity(f.lon, f.lat);
-    const sel = selectedFootprint === f.id;
     pins += `<g class="map-pin" data-pin="${f.id}">
-      <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${sel ? 12 : 9}" fill="#F5A623" ${sel ? 'stroke="#fff" stroke-width="3"' : 'class="pin-glow"'}/>
+      <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="9" fill="#F5A623" class="pin-glow"/>
       <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="#fff"/>
     </g>`;
-    if (sel || i === 0) pins += `<text x="${(p.x - 10).toFixed(1)}" y="${(p.y - 14).toFixed(1)}" class="pin-label">${esc(f.city)}▾</text>`;
   });
   S.wishes.forEach(w => {
     const p = projectCity(w.lon, w.lat);
     pins += `<g class="map-pin" data-pin="w_${w.id}"><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="7" fill="#D8D2C0"/><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="#fff"/></g>`;
   });
 
-  /* 详情卡：选中的，或最近的 */
-  const cur = S.footprints.find(f => f.id === selectedFootprint) || lit[0];
-
-  let detail = `<div class="card muted" style="text-align:center;">地图上还没有亮点，记录一次出发吧 👣</div>`;
-  if (cur) {
-    detail = `<div class="memory">
-      <div class="head"><span class="name">${esc(cur.city)} · ${S.footprints.filter(f => f.city === cur.city).length} 次出发</span>
-        <span class="date">${fmtDate(cur.date)} · ${esc(cur.type || '')}</span></div>
-      <div class="loc">📍 ${esc(cur.province || '')} ${esc(cur.city)}${cur.place ? ' · ' + esc(cur.place) : ''}</div>
-      ${cur.seen ? `<div class="quote">👀 “${esc(cur.seen)}”</div>` : ''}
-      ${cur.favorite ? `<div class="quote">💖 最喜欢：<b>${esc(cur.favorite)}</b></div>` : ''}
-      ${cur.photoId ? `<div class="pics"><img data-photo="${cur.photoId}" style="width:72px;height:72px;"></div>` : ''}
-      ${cur.steps ? `<div class="steps">👣 走了约 ${cur.steps} 步</div>` : ''}
-      ${cur.calibratedAt ? `<div class="muted" style="font-size:10px;margin-top:4px;color:#B0A88F;">✅ 家长已校准</div>` : ''}
-      ${PARENT ? `<div style="margin-top:8px;display:flex;gap:8px;"><button class="btn-mini" data-editfoot="${cur.id}">✏️ 修改</button><button class="btn-mini warn" data-delfoot="${cur.id}">🗑️ 删除</button></div>` : ''}
-    </div>`;
+  /* 最近 3 次出发记录 */
+  const recent = lit.slice(0, 3);
+  let detail = `<div class="sort-note"><span>👣 最近的出发（点击查看详情${PARENT ? '，可修改' : ''}）</span><b style="font-size:10px;">近 3 次</b></div>`;
+  if (recent.length) {
+    detail += recent.map(footCard).join('');
+  } else {
+    detail += `<div class="card muted" style="text-align:center;">地图上还没有亮点，记录一次出发吧 👣</div>`;
   }
 
   $('#page-feet').innerHTML = `
@@ -1265,13 +1349,11 @@ async function renderFeet() {
       <svg viewBox="0 0 660 480">
         <path class="land" d="${CHINA_MAIN_PATH}"/>
         ${pins}
-        <g transform="translate(515,295)">
-          <rect class="inset-box" x="-5" y="-5" width="145" height="185" rx="6"/>
+        <g class="inset-group" transform="translate(556,336) scale(0.55)">
           <path class="land-sm" d="${CHINA_SOUTH_PATH}"/>
-          <text x="8" y="178" class="inset-title">南海诸岛</text>
         </g>
       </svg>
-      <div class="map-caption">已点亮 ${cities.size} 座城市${S.wishes.length ? ` · 想去 ${S.wishes.length} 个地方` : ''} · 点亮点查看当时的记忆</div>
+      <div class="map-caption">已点亮 ${cities.size} 座城市${S.wishes.length ? ` · 想去 ${S.wishes.length} 个地方` : ''} · 点地图亮点看详情</div>
     </div>
     ${detail}
     <button class="cta" id="addFootBtn">＋ 记录一次新的出发</button>`;
@@ -1283,21 +1365,59 @@ async function renderFeet() {
       toast('想去的地方：' + (w ? w.city : ''));
       return;
     }
-    selectedFootprint = id;
-    renderFeet();
+    openFootDetail(id);
   });
+  $$('#page-feet [data-foot]').forEach(c => c.onclick = () => openFootDetail(c.dataset.foot));
   $('#addFootBtn').onclick = () => openFootForm();
-  $$('#page-feet [data-editfoot]').forEach(b => b.onclick = () => openFootForm(S.footprints.find(f => f.id === b.dataset.editfoot)));
-  $$('#page-feet [data-delfoot]').forEach(b => b.onclick = async () => {
-    if (confirm('删除这条脚步记录？')) {
-      const f = S.footprints.find(x => x.id === b.dataset.delfoot);
-      if (f && f.photoId) DB.deletePhoto(f.photoId);
-      S.footprints = S.footprints.filter(x => x.id !== b.dataset.delfoot);
-      selectedFootprint = null;
-      await save(); renderFeet();
-    }
-  });
   hydratePhotos();
+}
+
+/* 脚步记录卡（列表用） */
+function footCard(f) {
+  return `<div class="memory" data-foot="${f.id}" style="cursor:pointer;">
+    <div class="head"><span class="name">${esc(f.city)}${f.place ? ' · ' + esc(f.place) : ''}</span>
+      <span class="date">${fmtDate(f.date)} · ${esc(f.type || '')}</span></div>
+    ${f.seen ? `<div class="quote">👀 “${esc(f.seen)}”</div>` : ''}
+    ${f.favorite ? `<div class="quote">💖 最喜欢：<b>${esc(f.favorite)}</b></div>` : ''}
+    ${f.photoId ? `<div class="pics"><img data-photo="${f.photoId}"></div>` : ''}
+    ${f.steps ? `<div class="steps">👣 走了约 ${f.steps} 步</div>` : ''}
+    <div class="muted" style="font-size:9px;margin-top:4px;color:#B0A88F;">点击展开详情 ▾</div>
+  </div>`;
+}
+
+/* 脚步详情弹层：完整信息 + 家长可修订 */
+function openFootDetail(id) {
+  const f = S.footprints.find(x => x.id === id);
+  if (!f) return;
+  const times = S.footprints.filter(x => x.city === f.city).length;
+  openSheet(`
+    <h3>📍 ${esc(f.city)} <span style="font-size:12px;color:var(--ink-soft);font-weight:600;">共 ${times} 次出发</span></h3>
+    <div class="memory" style="margin-bottom:14px;">
+      <div class="head"><span class="name">${esc(f.city)}${f.place ? ' · ' + esc(f.place) : ''}</span>
+        <span class="date">${fmtDate(f.date)} · ${esc(f.type || '')}</span></div>
+      <div class="loc">📍 ${esc(f.province || '')} ${esc(f.city)}</div>
+      ${f.seen ? `<div class="quote">👀 我看到了：${esc(f.seen)}</div>` : ''}
+      ${f.favorite ? `<div class="quote">💖 最喜欢 / 印象最深：<b>${esc(f.favorite)}</b></div>` : ''}
+      ${f.photoId ? `<div class="pics"><img data-photo="${f.photoId}" style="width:88px;height:88px;"></div>` : ''}
+      ${f.steps ? `<div class="steps">👣 走了约 ${f.steps} 步</div>` : ''}
+      ${f.calibratedAt ? `<div class="muted" style="font-size:10px;margin-top:4px;color:#B0A88F;">✅ 家长已校准</div>` : ''}
+    </div>
+    <div class="sheet-actions">
+      ${PARENT ? `<button class="cta cancel" id="fdEdit">✏️ 修改</button><button class="cta cancel" id="fdDel" style="color:var(--danger);">🗑️ 删除</button>` : ''}
+      <button class="cta" onclick="closeSheet()">关闭</button>
+    </div>
+  `);
+  hydratePhotos();
+  if (PARENT) {
+    $('#fdEdit').onclick = () => { closeSheet(); openFootForm(f); };
+    $('#fdDel').onclick = async () => {
+      if (confirm('删除这条脚步记录？此操作不可恢复。')) {
+        if (f.photoId) DB.deletePhoto(f.photoId);
+        S.footprints = S.footprints.filter(x => x.id !== f.id);
+        await save(); closeSheet(); renderFeet(); toast('已删除');
+      }
+    };
+  }
 }
 
 function openFootForm(edit) {
