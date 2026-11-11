@@ -990,7 +990,7 @@ const DB = (() => {
 
 let S = null;              // 全局数据
 let PARENT = false;        // 家长模式
-const APP_VERSION = 'v2.0';
+const APP_VERSION = 'v2.1';
 let currentPage = 'home';
 let booksFilter = { mode: 'all', year: null, month: null };
 let honorsFilter = 'all';
@@ -1262,7 +1262,10 @@ async function renderBooks() {
         <div class="head"><span class="name">${esc(b.title)}</span><span class="badge-set">套书 · 全${b.totalVolumes}册</span></div>
         <div class="item-meta">${esc(b.author || '')} · 已完成 ${done.size} / ${b.totalVolumes} 册 · 点某一册即可打卡</div>
         <div class="vol-dots">${cells}</div>
-        <div class="foot">${next ? `🐾 点亮下一册：第${next}册 → 点上面的格子打卡完成` : '🏅 全套通关！太厉害啦！'}</div>
+        <div class="foot" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span>${next ? `🐾 点亮下一册：第${next}册` : '🏅 全套通关！太厉害啦！'}</span>
+          ${done.size < b.totalVolumes ? `<button class="btn-mini" data-batch="${b.id}" style="white-space:nowrap;">⚡ 一键补打卡</button>` : ''}
+        </div>
       </div>`;
     } else {
       const last = bookLastDate(b);
@@ -1297,6 +1300,7 @@ function bindBooks() {
     const [bookId, vol] = c.dataset.vol.split('|');
     tapVolume(bookId, +vol);
   });
+  $$('#page-books [data-batch]').forEach(c => c.onclick = () => openBatchCheckin(c.dataset.batch));
   $$('#page-books [data-book]').forEach(c => c.onclick = () => openBookDetail(c.dataset.book));
   $('#addBookBtn').onclick = () => openBookForm();
   /* 许愿书单 */
@@ -1378,6 +1382,35 @@ async function tapVolume(bookId, vol) {
     b.records.push({ date: $('#volDate').value || todayStr(), volume: vol, note: $('#volNote').value.trim(), photoId: sheetPhotoId, createdAt: new Date().toISOString() });
     await save(); closeSheet(); celebrate(); renderBooks();
     toast(`第${vol}册点亮啦！`);
+  };
+}
+
+/* 套书一键补打卡：把还没点亮的前 N 册一次性录入（适合补录过去的阅读） */
+function openBatchCheckin(bookId) {
+  const b = S.books.find(x => x.id === bookId);
+  if (!b || !b.isSeries) return;
+  const done = new Set(b.records.map(r => r.volume));
+  const todo = Array.from({ length: b.totalVolumes }, (_, i) => i + 1).filter(n => !done.has(n));
+  if (!todo.length) { toast('全套都已点亮啦 🏅'); return; }
+  openSheet(`
+    <h3>⚡ 一键补打卡 · ${esc(b.title)}</h3>
+    <div class="muted" style="margin-bottom:12px;">补录过去的阅读：填「已读到第几册」，会把还没点亮的册数（第 ${todo[0]}~${todo[todo.length - 1]} 册中未点的部分）一次性打卡。适合补录之前读完的书。</div>
+    <div class="field"><label>已读到第几册？（1 ~ ${b.totalVolumes}）</label>
+      <input type="number" id="btUpTo" min="1" max="${b.totalVolumes}" value="${todo[todo.length - 1]}"></div>
+    <div class="field"><label>读完日期（按补录日期记录）</label>
+      <input type="date" id="btDate" value="${todayStr()}" max="${todayStr()}"></div>
+    <div class="muted" style="font-size:11px;margin-bottom:12px;">💡 想分几次记录不同的日期？直接点书架上的分册格子逐册打卡即可。</div>
+    <div class="sheet-actions"><button class="cta cancel" onclick="closeSheet()">取消</button><button class="cta" id="btGo">⚡ 全部点亮</button></div>
+  `);
+  $('#btGo').onclick = async () => {
+    const upTo = Math.max(1, Math.min(b.totalVolumes, +$('#btUpTo').value || 0));
+    const date = $('#btDate').value || todayStr();
+    const targets = Array.from({ length: upTo }, (_, i) => i + 1).filter(n => !done.has(n));
+    if (!targets.length) { toast('这些册都已点亮过啦'); return; }
+    if (!confirm(`将为《${b.title}》补录第 ${targets.join('、')} 册，共 ${targets.length} 条记录（日期 ${date}），确定吗？`)) return;
+    targets.forEach(n => b.records.push({ date, volume: n, note: '', photoId: null, createdAt: new Date().toISOString() }));
+    await save(); closeSheet(); celebrate(); renderBooks();
+    toast(`⚡ 一次点亮 ${targets.length} 册！`);
   };
 }
 
