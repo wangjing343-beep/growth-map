@@ -287,6 +287,25 @@ h2.title{font-size:20px;line-height:1.3;margin-top:2px;}
 .cta.hn-fire{background:linear-gradient(135deg,#FF9A3D,#FF5E7E);box-shadow:0 6px 18px rgba(255,94,126,.4);animation:hnPulse 2.2s ease-in-out infinite;}
 @keyframes hnPulse{0%,100%{box-shadow:0 6px 18px rgba(255,94,126,.35);}50%{box-shadow:0 6px 26px rgba(255,94,126,.6);}}
 
+/* ============================================================
+ * v2.0 书单：三维阅读量统计 + 许愿书单
+ * ============================================================ */
+.stat-tri{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.stat-tri .stat-box{padding:10px 4px;}
+.stat-tri .num{font-size:19px;}
+.stat-tri .lab{font-size:9.5px;}
+.wish-box{background:rgba(255,253,248,.94);border-radius:16px;padding:12px 14px;margin-top:12px;box-shadow:0 4px 14px rgba(20,30,70,.14);}
+.wish-head{font-size:13px;font-weight:900;display:flex;align-items:baseline;gap:8px;}
+.wish-head span{font-size:10px;font-weight:600;color:var(--ink-soft);}
+.wish-item{display:flex;align-items:center;gap:6px;padding:7px 0;border-bottom:1px dashed #EAE5D6;}
+.wish-item:last-of-type{border-bottom:none;}
+.wish-name{flex:1;font-size:13px;font-weight:700;color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.wish-name i{font-style:normal;font-size:10px;color:var(--ink-soft);font-weight:500;margin-left:5px;}
+.wish-add{display:flex;gap:8px;margin-top:10px;}
+.wish-add input{flex:1;border:1.5px solid #E3DCC8;border-radius:12px;padding:9px 12px;font-size:13px;outline:none;background:#fff;}
+.wish-add input:focus{border-color:#F5A623;}
+.wish-add button{border:none;border-radius:12px;padding:9px 14px;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(135deg,#F5A623,#FFC95C);box-shadow:0 4px 10px rgba(245,166,35,.35);}
+
 </style>
 </head>
 <body>
@@ -491,7 +510,8 @@ const DB = (() => {
       honors: [],
       checkins: [],
       footprints: [],
-      wishes: []
+      wishes: [],
+      bookWishes: []
     };
   }
 
@@ -970,9 +990,9 @@ const DB = (() => {
 
 let S = null;              // 全局数据
 let PARENT = false;        // 家长模式
-const APP_VERSION = 'v1.9.1';
+const APP_VERSION = 'v2.0';
 let currentPage = 'home';
-let booksFilter = { mode: 'all', year: null };
+let booksFilter = { mode: 'all', year: null, month: null };
 let honorsFilter = 'all';
 let selectedFootprint = null;
 let checkinMonth = null;   // 打卡月度视图：'YYYY-MM'，null = 当前月
@@ -1155,31 +1175,84 @@ function sortedBooks() {
   if (booksFilter.mode === 'year' && booksFilter.year) {
     return list.filter(b => b.records.some(r => r.date.startsWith(booksFilter.year)));
   }
+  if (booksFilter.mode === 'month' && booksFilter.month) {
+    return list.filter(b => b.records.some(r => r.date.slice(0, 7) === booksFilter.month));
+  }
   return list;
+}
+
+/* 各时间段阅读量：套书按"点亮了几册"计数，普通书按书目计数 */
+function periodStats(prefix) {
+  let vols = 0, times = 0;
+  S.books.forEach(b => {
+    const recs = b.records.filter(r => r.date.startsWith(prefix));
+    times += recs.length;
+    if (b.isSeries) {
+      const vset = new Set(recs.filter(r => r.volume).map(r => r.volume));
+      vols += vset.size || (recs.length ? 1 : 0);
+    } else if (recs.length) {
+      vols += 1;
+    }
+  });
+  return { vols, times };
+}
+
+function bookMonths() {
+  const ms = new Set();
+  S.books.forEach(b => b.records.forEach(r => ms.add(r.date.slice(0, 7))));
+  return Array.from(ms).sort().reverse().slice(0, 10);
+}
+
+/* ---------- 许愿书单 ---------- */
+function wishRow(w) {
+  return `<div class="wish-item">
+    <span class="wish-name">🌟 ${esc(w.title)}${w.author ? '<i>' + esc(w.author) + '</i>' : ''}</span>
+    <button class="btn-mini" data-wishgo="${w.id}">📖 开始读</button>
+    <button class="btn-mini warn" data-wishdel="${w.id}">✕</button>
+  </div>`;
 }
 
 async function renderBooks() {
   const years = bookYears();
-  const stats = bookStats();
+  const months = bookMonths();
+  const mNow = todayStr().slice(0, 7);
+  const yNow = todayStr().slice(0, 4);
+  const sMon = periodStats(mNow), sYear = periodStats(yNow), sAll = bookStats();
   let html = `
     <div class="chips">
       <button class="chip ${booksFilter.mode === 'all' ? 'on' : ''}" data-bf="all">全部</button>
+      <button class="chip ${booksFilter.mode === 'month' ? 'on' : ''}" data-bf="month">按月份 🗓️</button>
       <button class="chip ${booksFilter.mode === 'year' ? 'on' : ''}" data-bf="year">按年份 📅</button>
       <button class="chip ${booksFilter.mode === 'count' ? 'on' : ''}" data-bf="count">按阅读次数 🔥</button>
     </div>`;
+  if (booksFilter.mode === 'month') {
+    html += `<div class="chips" style="margin-top:8px;">` +
+      months.map(m => `<button class="chip ${booksFilter.month === m ? 'on' : ''}" data-bm="${m}">${m.replace('-', '年')}月</button>`).join('') +
+      (months.length ? '' : '<span class="muted">还没有阅读记录</span>') + `</div>`;
+  }
   if (booksFilter.mode === 'year') {
     html += `<div class="chips" style="margin-top:8px;">` +
       years.map(y => `<button class="chip ${booksFilter.year === y ? 'on' : ''}" data-by="${y}">${y}年</button>`).join('') +
       (years.length ? '' : '<span class="muted">还没有阅读记录</span>') + `</div>`;
   }
-  html += `<div class="sort-note"><span>排序规则</span><b>阅读次数 ↓ ＋ 最近读完 ↓</b></div>
-    <div class="stat-duo">
-      <div class="stat-box t-blue"><div class="num">${stats.distinct}<span> 本</span></div><div class="lab">读过多少本（不同书）</div></div>
-      <div class="stat-box t-yellow"><div class="num">${stats.times}<span> 次</span></div><div class="lab">累计阅读次数</div></div>
+  html += `<div class="stat-tri">
+      <div class="stat-box t-pink"><div class="num">${sMon.vols}<span> 本</span></div><div class="lab">本月阅读 · ${sMon.times} 次</div></div>
+      <div class="stat-box t-green"><div class="num">${sYear.vols}<span> 本</span></div><div class="lab">今年累计 · ${sYear.times} 次</div></div>
+      <div class="stat-box t-blue"><div class="num">${sAll.distinct}<span> 本</span></div><div class="lab">全部收获 · ${sAll.times} 次</div></div>
     </div>
+    <div class="wish-box">
+      <div class="wish-head">🌟 许愿书单 <span>把近期最想看的书许个愿吧</span></div>
+      <div id="wishList">${(S.bookWishes || []).map(wishRow).join('') || '<div class="muted" style="font-size:11px;padding:2px 0 6px;">还没有许愿，在下面写下第一本想看的书吧～</div>'}</div>
+      <div class="wish-add">
+        <input id="wishInput" placeholder="书名（可空格后补作者）" maxlength="40">
+        <button id="wishAddBtn">＋许愿</button>
+      </div>
+    </div>
+    <div class="sort-note"><span>阅读记录</span><b>阅读次数 ↓ ＋ 最近读完 ↓</b></div>
     <div id="bookList" style="display:flex;flex-direction:column;gap:11px;">`;
 
-  for (const b of sortedBooks()) {
+  const shown = sortedBooks();
+  for (const b of shown) {
     if (b.isSeries) {
       const done = new Set(b.records.map(r => r.volume));
       const next = Array.from({ length: b.totalVolumes }, (_, i) => i + 1).find(n => !done.has(n));
@@ -1201,7 +1274,7 @@ async function renderBooks() {
       </div>`;
     }
   }
-  if (!S.books.length) html += `<div class="card muted" style="text-align:center;padding:24px;">书架还是空的，记录你读完的第一本书吧 📖</div>`;
+  if (!shown.length) html += `<div class="card muted" style="text-align:center;padding:24px;">${booksFilter.mode === 'month' && booksFilter.month ? '这个月还没有阅读记录哦 📖' : '书架还是空的，记录你读完的第一本书吧 📖'}</div>`;
   html += `</div>
     <button class="cta" id="addBookBtn">＋ 记录我读完的一本书</button>
     ${PARENT ? `<div class="chips" style="margin-top:10px;">
@@ -1217,14 +1290,41 @@ async function renderBooks() {
 }
 
 function bindBooks() {
-  $$('#page-books [data-bf]').forEach(c => c.onclick = () => { booksFilter.mode = c.dataset.bf; booksFilter.year = null; renderBooks(); });
+  $$('#page-books [data-bf]').forEach(c => c.onclick = () => { booksFilter.mode = c.dataset.bf; booksFilter.year = null; booksFilter.month = null; renderBooks(); });
   $$('#page-books [data-by]').forEach(c => c.onclick = () => { booksFilter.year = c.dataset.by; renderBooks(); });
+  $$('#page-books [data-bm]').forEach(c => c.onclick = () => { booksFilter.month = c.dataset.bm; renderBooks(); });
   $$('#page-books [data-vol]').forEach(c => c.onclick = () => {
     const [bookId, vol] = c.dataset.vol.split('|');
     tapVolume(bookId, +vol);
   });
   $$('#page-books [data-book]').forEach(c => c.onclick = () => openBookDetail(c.dataset.book));
   $('#addBookBtn').onclick = () => openBookForm();
+  /* 许愿书单 */
+  const wishAdd = $('#wishAddBtn');
+  if (wishAdd) {
+    wishAdd.onclick = async () => {
+      const inp = $('#wishInput');
+      const t = inp.value.trim();
+      if (!t) { toast('先写下书名哦 🌟'); return; }
+      const parts = t.split(/\s+/);
+      S.bookWishes = S.bookWishes || [];
+      S.bookWishes.push({ id: uid(), title: parts[0], author: parts.slice(1).join(' ') || '', createdAt: new Date().toISOString() });
+      await save(); renderBooks(); toast('许愿成功，读完后记得来点亮 🌟');
+    };
+    $$('#page-books [data-wishgo]').forEach(b => b.onclick = async () => {
+      const w = (S.bookWishes || []).find(x => x.id === b.dataset.wishgo);
+      if (!w) return;
+      S.books.unshift({ id: uid(), title: w.title, author: w.author, isSeries: false, totalVolumes: 0, records: [], createdAt: new Date().toISOString() });
+      S.bookWishes = S.bookWishes.filter(x => x.id !== w.id);
+      await save(); renderBooks(); toast('已加入书单，读完记得回来打卡 📖');
+    });
+    $$('#page-books [data-wishdel]').forEach(b => b.onclick = async () => {
+      const w = (S.bookWishes || []).find(x => x.id === b.dataset.wishdel);
+      if (!w || !confirm(`把「${w.title}」从许愿书单里移除？`)) return;
+      S.bookWishes = S.bookWishes.filter(x => x.id !== w.id);
+      await save(); renderBooks();
+    });
+  }
   const a = $('#expBooksCsv'), p = $('#expBooksPdf');
   if (a) a.onclick = exportBooksCsv;
   if (p) p.onclick = () => buildPrint('books');
