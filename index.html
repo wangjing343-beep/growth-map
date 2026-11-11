@@ -43,15 +43,15 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink);}
 /* ===== 首页：全屏照片背景 ===== */
 #page-home{padding:0;}
 .home-bg{position:absolute;inset:0;background:linear-gradient(160deg,#8FC7E8 0%,#BFE0C8 55%,#F6E7A8 100%);background-size:cover;background-position:center;}
-.home-bg .dim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(30,40,60,.08),rgba(30,40,60,.45));}
+.home-bg .dim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(30,40,60,.22),rgba(30,40,60,.55));}
 .home-content{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;flex:1;padding:14px 16px 90px;overflow-y:auto;}
 .home-status{display:flex;justify-content:flex-end;align-items:center;font-size:12px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.35);}
-.sync-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.3);color:#fff;font-size:11px;border-radius:999px;padding:3px 10px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.3);}
+.sync-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(15,25,50,.45);color:#fff;font-size:11px;border-radius:999px;padding:3px 10px;font-weight:700;backdrop-filter:blur(4px);}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:#8EF0B2;}
-.greet{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.4);border-radius:18px;padding:16px 16px 34px;position:relative;backdrop-filter:blur(2px);}
-.greet .kicker{font-size:10px;letter-spacing:2px;color:#FFE9B8;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.3);}
-.greet .big{font-size:21px;font-weight:800;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.35);padding-right:96px;margin-top:2px;}
-.greet .m2{font-size:11px;color:rgba(255,255,255,.95);margin-top:5px;text-shadow:0 1px 6px rgba(0,0,0,.4);padding-right:96px;line-height:1.6;}
+.greet{background:linear-gradient(135deg,rgba(33,46,90,.85) 0%,rgba(70,50,128,.82) 100%);border:1px solid rgba(255,255,255,.3);border-radius:18px;padding:16px 16px 34px;position:relative;box-shadow:0 6px 18px rgba(20,30,70,.3);}
+.greet .kicker{font-size:10px;letter-spacing:2px;color:#FFD86B;font-weight:700;}
+.greet .big{font-size:21px;font-weight:800;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.35);padding-right:96px;margin-top:2px;}
+.greet .m2{font-size:11px;color:rgba(255,255,255,.95);margin-top:5px;text-shadow:0 1px 4px rgba(0,0,0,.3);padding-right:96px;line-height:1.6;}
 /* 星星（长按进入家长模式）+ 星球 */
 .star-btn{position:absolute;right:40px;top:6px;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;filter:drop-shadow(0 2px 5px rgba(0,0,0,.3));}
 .star-btn.pressing{animation:starGlow 3s linear forwards;}
@@ -62,15 +62,15 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink);}
 .parent-progress{position:absolute;left:0;bottom:0;height:3px;background:#FFD75E;width:0%;border-radius:3px;}
 /* 首页入口卡片 */
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
-.tile{border-radius:18px;padding:16px 13px;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;background:rgba(255,255,255,.55);backdrop-filter:blur(8px);box-shadow:0 3px 10px rgba(0,0,0,.05);}
+.tile{border-radius:18px;padding:16px 13px;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;box-shadow:0 6px 16px rgba(30,40,80,.22);}
 .tile:active{transform:scale(.97);}
-.tile .icon{font-size:26px;}
-.tile .name{font-size:15px;font-weight:800;margin-top:8px;text-align:center;}
-.tile .meta{font-size:11px;color:var(--ink-soft);margin-top:3px;text-align:center;}
-.t-yellow{background:rgba(255,243,214,.55);} .t-blue{background:rgba(234,243,255,.55);}
-.t-green{background:rgba(232,247,236,.55);} .t-pink{background:rgba(253,238,240,.55);}
+.tile .icon{font-size:26px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.15));}
+.tile .name{font-size:15px;font-weight:800;margin-top:8px;text-align:center;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.22);}
+.tile .meta{font-size:11px;margin-top:3px;text-align:center;color:rgba(255,255,255,.95);text-shadow:0 1px 3px rgba(0,0,0,.2);}
+.t-yellow{background:linear-gradient(145deg,#F5A623,#FFC95C);} .t-blue{background:linear-gradient(145deg,#3D6EC9,#6FA0E8);}
+.t-green{background:linear-gradient(145deg,#2CA06A,#57C289);} .t-pink{background:linear-gradient(145deg,#E8618F,#F591B8);}
 /* 首页进度与提示 */
-.home-card{background:rgba(255,255,255,.6);backdrop-filter:blur(8px);border-radius:16px;padding:14px;box-shadow:0 3px 10px rgba(0,0,0,.05);}
+.home-card{background:rgba(255,253,248,.94);border-radius:16px;padding:14px;box-shadow:0 4px 14px rgba(20,30,70,.18);}
 .home-card .row1{display:flex;justify-content:space-between;font-size:13px;font-weight:800;}
 .bar{height:9px;border-radius:99px;background:#F2EADA;margin-top:10px;overflow:hidden;}
 .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#F5A623,#FFC95C);transition:width .5s;}
@@ -970,7 +970,7 @@ const DB = (() => {
 
 let S = null;              // 全局数据
 let PARENT = false;        // 家长模式
-const APP_VERSION = 'v1.8.1';
+const APP_VERSION = 'v1.9';
 let currentPage = 'home';
 let booksFilter = { mode: 'all', year: null };
 let honorsFilter = 'all';
@@ -1291,29 +1291,35 @@ function openBookDetail(id) {
     <div class="muted" style="margin-bottom:12px;">${esc(b.author || '作者未填')} · 共读过 ${b.records.length} 次</div>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
       ${recs.map(r => `<div class="memory"><div class="head"><span class="name" style="font-size:12px;color:var(--ink);">读完于 ${fmtDate(r.date)}</span>
-        ${PARENT ? `<button class="btn-mini warn" data-delrec="${r.createdAt || r.date}">删除</button>` : ''}</div>
+        <button class="btn-mini warn" data-delrec="${r.createdAt || r.date}">删除</button></div>
         ${r.note ? `<div class="quote">💬 ${esc(r.note)}</div>` : ''}
         ${r.photoId ? `<div class="pics"><img data-photo="${r.photoId}"></div>` : ''}</div>`).join('')}
     </div>
     <button class="cta green" id="rereadBtn">🔁 我又读了一遍（+1次）</button>
-    ${PARENT ? `<button class="cta ghost" style="margin-top:10px;" id="editBookBtn">✏️ 家长修改书籍信息</button>` : ''}
+    <button class="cta ghost" style="margin-top:10px;" id="editBookBtn">✏️ 修改书籍信息</button>
+    <button class="cta cancel" style="margin-top:10px;color:var(--danger);" id="delBookBtn">🗑️ 删除这本书</button>
   `);
   hydratePhotos();
   $('#rereadBtn').onclick = async () => {
     b.records.push({ date: todayStr(), note: '', photoId: null, createdAt: new Date().toISOString() });
     await save(); closeSheet(); celebrate(); renderBooks(); toast('阅读次数 +1 🔥');
   };
-  if (PARENT) {
-    $('#editBookBtn').onclick = () => openBookForm(b);
-    $$('#sheetBody [data-delrec]').forEach(btn => btn.onclick = async () => {
-      const r = b.records.find(x => (x.createdAt || x.date) === btn.dataset.delrec);
-      if (r && confirm('删除这条阅读记录？')) {
-        b.records = b.records.filter(x => x !== r);
-        if (r.photoId) DB.deletePhoto(r.photoId);
-        await save(); closeSheet(); renderBooks();
-      }
-    });
-  }
+  $('#editBookBtn').onclick = () => openBookForm(b);
+  $('#delBookBtn').onclick = async () => {
+    if (!confirm(`删除《${b.title}》及其全部 ${b.records.length} 条阅读记录？此操作不可恢复。`)) return;
+    const pid = b.records.find(r => r.photoId);
+    if (pid) DB.deletePhoto(pid.photoId);
+    S.books = S.books.filter(x => x.id !== b.id);
+    await save(); closeSheet(); renderBooks(); toast('已删除');
+  };
+  $$('#sheetBody [data-delrec]').forEach(btn => btn.onclick = async () => {
+    const r = b.records.find(x => (x.createdAt || x.date) === btn.dataset.delrec);
+    if (r && confirm('删除这条阅读记录？')) {
+      b.records = b.records.filter(x => x !== r);
+      if (r.photoId) DB.deletePhoto(r.photoId);
+      await save(); closeSheet(); renderBooks();
+    }
+  });
 }
 
 /* 书新增 / 编辑 */
@@ -1337,7 +1343,7 @@ function pickSheetPhoto(slotId) {
 function openBookForm(edit) {
   sheetPhotoId = edit && edit.records.find(r => r.photoId) ? edit.records.find(r => r.photoId).photoId : null;
   openSheet(`
-    <h3>${edit ? '✏️ 家长修改书籍' : '＋ 记录我读完的一本书'}</h3>
+    <h3>${edit ? '✏️ 修改书籍' : '＋ 记录我读完的一本书'}</h3>
     <div class="field"><label>书名 *</label><input id="bkTitle" value="${esc(edit ? edit.title : '')}" placeholder="例如：小王子"></div>
     <div class="field"><label>作者</label><input id="bkAuthor" value="${esc(edit ? edit.author : '')}" placeholder="例如：埃克苏佩里"></div>
     <div class="field"><label>读完日期</label><input type="date" id="bkDate" value="${todayStr()}" max="${todayStr()}"></div>
@@ -1437,7 +1443,7 @@ async function renderHonors() {
           <div class="item-name">${esc(h.name)}</div>
           <div class="item-meta">${h.rank} · ${fmtDate(h.date)} · ${esc(h.category || '')}${h.event ? ' · ' + esc(h.event) : ''}</div>
           ${h.note ? `<div class="muted" style="margin-top:4px;">💬 ${esc(h.note)}</div>` : ''}
-          ${h.calibratedAt ? `<div class="muted" style="font-size:10px;margin-top:3px;color:#B0A88F;">✅ 家长已校准</div>` : ''}
+          ${h.calibratedAt ? `<div class="muted" style="font-size:10px;margin-top:3px;color:#B0A88F;">✅ 已校准</div>` : ''}
         </div>
         ${h.photoId ? `<img class="honor-photo" data-photo="${h.photoId}">` : ''}
       </div>`;
@@ -1450,18 +1456,45 @@ async function renderHonors() {
     <div class="hn-head"><div class="kicker">MY HONORS</div><h2 class="title">我的荣誉榜</h2>
     <div class="muted">这里是属于你的荣耀王国 🏰</div></div>` + html;
   $$('#page-honors [data-hf]').forEach(c => c.onclick = () => { honorsFilter = c.dataset.hf; renderHonors(); });
-  $$('#page-honors [data-honor]').forEach(c => c.onclick = () => {
-    const h = S.honors.find(x => x.id === c.dataset.honor);
-    if (PARENT) openHonorForm(h); else toast('🏆 ' + h.rank + '：' + h.name);
-  });
+  $$('#page-honors [data-honor]').forEach(c => c.onclick = () => openHonorDetail(c.dataset.honor));
   $('#addHonorBtn').onclick = () => openHonorForm();
   hydratePhotos();
+}
+
+/* 荣誉详情：所有人可查看，并可直接修改 / 删除 */
+function openHonorDetail(id) {
+  const h = S.honors.find(x => x.id === id);
+  if (!h) return;
+  openSheet(`
+    <h3>${RANKS[h.rank] || '🏅'} ${esc(h.name)}</h3>
+    <div class="memory" style="margin-bottom:14px;">
+      <div class="head"><span class="name">${h.rank} · ${esc(h.category || '其他')}</span>
+        <span class="date">${fmtDate(h.date)}</span></div>
+      ${h.event ? `<div class="loc">🎯 ${esc(h.event)}</div>` : ''}
+      ${h.note ? `<div class="quote">💬 ${esc(h.note)}</div>` : ''}
+      ${h.photoId ? `<div class="pics"><img data-photo="${h.photoId}" style="width:88px;height:88px;"></div>` : ''}
+      ${h.calibratedAt ? `<div class="muted" style="font-size:10px;margin-top:4px;color:#B0A88F;">✅ 已校准</div>` : ''}
+    </div>
+    <div class="sheet-actions">
+      <button class="cta cancel" id="hdEdit">✏️ 修改</button>
+      <button class="cta cancel" id="hdDel" style="color:var(--danger);">🗑️ 删除</button>
+      <button class="cta" onclick="closeSheet()">关闭</button>
+    </div>
+  `);
+  hydratePhotos();
+  $('#hdEdit').onclick = () => { closeSheet(); openHonorForm(h); };
+  $('#hdDel').onclick = async () => {
+    if (!confirm(`删除荣誉「${h.name}」？此操作不可恢复。`)) return;
+    if (h.photoId) DB.deletePhoto(h.photoId);
+    S.honors = S.honors.filter(x => x.id !== h.id);
+    await save(); closeSheet(); renderHonors(); toast('已删除');
+  };
 }
 
 function openHonorForm(edit) {
   sheetPhotoId = edit ? edit.photoId : null;
   openSheet(`
-    <h3>${edit ? '✏️ 家长修改荣誉' : '＋ 记录我的新荣誉'}</h3>
+    <h3>${edit ? '✏️ 修改荣誉' : '＋ 记录我的新荣誉'}</h3>
     <div class="field"><label>比赛 / 活动名称 *</label><input id="hoName" value="${esc(edit ? edit.name : '')}" placeholder="例如：轮滑比赛个人赛"></div>
     <div class="field"><div class="row">
       <div style="flex:1;"><label>获得名次</label>
@@ -1759,24 +1792,23 @@ function openFootDetail(id) {
       ${f.favorite ? `<div class="quote">💖 最喜欢 / 印象最深：<b>${esc(f.favorite)}</b></div>` : ''}
       ${f.photoId ? `<div class="pics"><img data-photo="${f.photoId}" style="width:88px;height:88px;"></div>` : ''}
       ${f.steps ? `<div class="steps">👣 走了约 ${f.steps} 步</div>` : ''}
-      ${f.calibratedAt ? `<div class="muted" style="font-size:10px;margin-top:4px;color:#B0A88F;">✅ 家长已校准</div>` : ''}
+      ${f.calibratedAt ? `<div class="muted" style="font-size:10px;margin-top:4px;color:#B0A88F;">✅ 已校准</div>` : ''}
     </div>
     <div class="sheet-actions">
-      ${PARENT ? `<button class="cta cancel" id="fdEdit">✏️ 修改</button><button class="cta cancel" id="fdDel" style="color:var(--danger);">🗑️ 删除</button>` : ''}
+      <button class="cta cancel" id="fdEdit">✏️ 修改</button>
+      <button class="cta cancel" id="fdDel" style="color:var(--danger);">🗑️ 删除</button>
       <button class="cta" onclick="closeSheet()">关闭</button>
     </div>
   `);
   hydratePhotos();
-  if (PARENT) {
-    $('#fdEdit').onclick = () => { closeSheet(); openFootForm(f); };
-    $('#fdDel').onclick = async () => {
-      if (confirm('删除这条脚步记录？此操作不可恢复。')) {
-        if (f.photoId) DB.deletePhoto(f.photoId);
-        S.footprints = S.footprints.filter(x => x.id !== f.id);
-        await save(); closeSheet(); renderFeet(); toast('已删除');
-      }
-    };
-  }
+  $('#fdEdit').onclick = () => { closeSheet(); openFootForm(f); };
+  $('#fdDel').onclick = async () => {
+    if (confirm('删除这条脚步记录？此操作不可恢复。')) {
+      if (f.photoId) DB.deletePhoto(f.photoId);
+      S.footprints = S.footprints.filter(x => x.id !== f.id);
+      await save(); closeSheet(); renderFeet(); toast('已删除');
+    }
+  };
 }
 
 function openFootForm(edit) {
@@ -1785,7 +1817,7 @@ function openFootForm(edit) {
   const editProv = edit ? (CITY_INDEX[edit.city] ? CITY_INDEX[edit.city].province : '') : '';
   const cascade = { country: edit ? (editProv || (edit.city ? '其他国家/地区' : '中国')) : '中国', province: editProv, city: edit ? (edit.city || '') : '' };
   openSheet(`
-    <h3>${edit ? '✏️ 家长修改脚步' : '＋ 记录一次新的出发'}</h3>
+    <h3>${edit ? '✏️ 修改脚步' : '＋ 记录一次新的出发'}</h3>
     <div class="field"><label>城市 *（国家 → 省 → 市 依次选择）</label>
       <div id="ftCascade">
         <div class="chips" style="margin-bottom:6px;">
@@ -1913,17 +1945,10 @@ function showParentPanel() {
     setTimeout(() => toast('💡 建议先备份一次数据，防止换手机丢失'), 1200);
   }
   const backupLabel = backupDays === null ? '💾 备份数据' : backupDays === 0 ? '✅ 今天已备份' : `💾 备份数据（${backupDays}天前）`;
-  /* 合并所有记录用于校准列表 */
-  const all = [];
-  S.books.forEach(b => b.records.forEach(r => all.push({ kind: '阅读', date: r.date, text: (b.isSeries ? `${b.title} 第${r.volume}册` : b.title), ref: { type: 'book', b, r } })));
-  S.honors.forEach(h => all.push({ kind: '荣誉', date: h.date, text: `${h.rank}：${h.name}`, ref: { type: 'honor', h } }));
-  S.checkins.forEach(c => c.done && all.push({ kind: '打卡', date: c.date, text: `${c.item}${c.minutes ? ' ' + c.minutes + '分钟' : ''}`, ref: { type: 'checkin', c } }));
-  S.footprints.forEach(f => all.push({ kind: '脚步', date: f.date, text: `${f.city}${f.place ? ' ' + f.place : ''}`, ref: { type: 'foot', f } }));
-  all.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   openSheet(`
-    <h3>👨‍👩‍👧 家长校准 <span class="parent-badge">家长模式</span></h3>
-    <div class="muted" style="margin-bottom:12px;">修改不会覆盖孩子最初写的原始内容，原始内容会保留在记录里。</div>
+    <h3>👨‍👩‍👧 家长中心 <span class="parent-badge">家长模式</span></h3>
+    <div class="muted" style="margin-bottom:12px;">修改内容不用来这里——直接在书单 / 荣誉 / 打卡 / 脚步页面点开任意记录，详情里就有「修改」和「删除」按钮 ✏️</div>
     <div class="chips" style="margin-bottom:14px;">
       <button class="chip ${DB.isCloud() ? 'on' : ''}" id="pfCloud">${DB.isCloud() ? '☁️ 云同步·已开启' : '☁️ 云同步'}</button>
       <button class="chip" id="pfExport">📤 导出中心</button>
@@ -1931,17 +1956,6 @@ function showParentPanel() {
       <button class="chip" id="pfRestore">📥 恢复备份</button>
       <button class="chip" id="pfPin">🔒 设置密码</button>
       <button class="chip" id="pfItems">⚙️ 打卡项目</button>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:8px;max-height:44dvh;overflow-y:auto;">
-      ${all.slice(0, 60).map((it, i) => `<div class="cal-item">
-        <div class="info">
-          <div class="item-name" style="font-size:13px;">${esc(it.text)}</div>
-          <div class="item-meta">${it.kind} · ${fmtDate(it.date)}</div>
-          ${it.ref.type === 'book' && it.ref.b._orig ? `<div class="orig">原文：${esc(it.ref.b._orig.title)}</div>` : ''}
-        </div>
-        <button class="btn-mini" data-cal="${i}">✏️ 修改</button>
-        <button class="btn-mini warn" data-caldel="${i}">🗑️</button>
-      </div>`).join('') || '<div class="muted">还没有任何记录</div>'}
     </div>
     <div class="muted" style="font-size:11px;text-align:center;margin-top:8px;">成长地图 ${APP_VERSION}${DB.isCloud() ? ' · ☁️ 已连接云端' : ''}</div>
     <div class="sheet-actions"><button class="cta cancel" id="pfExit">退出家长模式</button></div>
@@ -1992,31 +2006,6 @@ function showParentPanel() {
     };
     inp.click();
   };
-  $$('#sheetBody [data-cal]').forEach(b => b.onclick = () => {
-    const it = all[+b.dataset.cal];
-    closeSheet();
-    if (it.ref.type === 'book') openBookForm(it.ref.b);
-    else if (it.ref.type === 'honor') openHonorForm(it.ref.h);
-    else if (it.ref.type === 'foot') openFootForm(it.ref.f);
-    else if (it.ref.type === 'checkin') {
-      const c = it.ref.c;
-      const nv = prompt('修改打卡内容（格式：项目名|分钟|日期）：', `${c.item}|${c.minutes || ''}|${c.date}`);
-      if (!nv) return;
-      const [item, min, date] = nv.split('|');
-      if (!c._orig) c._orig = { item: c.item, minutes: c.minutes, date: c.date };
-      Object.assign(c, { item: item.trim() || c.item, minutes: +min || c.minutes, date: date.trim() || c.date, calibratedAt: new Date().toISOString() });
-      save().then(() => { toast('已校准 ✅'); refresh(); });
-    }
-  });
-  $$('#sheetBody [data-caldel]').forEach(b => b.onclick = async () => {
-    const it = all[+b.dataset.caldel];
-    if (!confirm('删除这条记录？此操作不可恢复。')) return;
-    if (it.ref.type === 'book') S.books = S.books.filter(x => x.id !== it.ref.b.id);
-    else if (it.ref.type === 'honor') { if (it.ref.h.photoId) DB.deletePhoto(it.ref.h.photoId); S.honors = S.honors.filter(x => x.id !== it.ref.h.id); }
-    else if (it.ref.type === 'checkin') S.checkins = S.checkins.filter(x => x.id !== it.ref.c.id);
-    else if (it.ref.type === 'foot') { if (it.ref.f.photoId) DB.deletePhoto(it.ref.f.photoId); S.footprints = S.footprints.filter(x => x.id !== it.ref.f.id); }
-    await save(); closeSheet(); refresh(); toast('已删除');
-  });
 }
 
 /* ---------- 云同步设置（GitHub Gist） ---------- */
