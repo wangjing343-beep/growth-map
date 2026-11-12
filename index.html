@@ -56,10 +56,11 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink);}
 .greet .kicker{font-size:11px;letter-spacing:2px;color:#FFD86B;font-weight:700;}
 .greet .big{font-size:26px;font-weight:800;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.35);padding-right:100px;margin-top:4px;}
 .greet .m2{font-size:13px;color:rgba(255,255,255,.96);margin-top:8px;text-shadow:0 1px 4px rgba(0,0,0,.3);padding-right:100px;line-height:1.7;}
-/* 星星（长按进入家长模式）+ 星球 */
-.star-btn{position:absolute;right:40px;top:6px;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;filter:drop-shadow(0 2px 5px rgba(0,0,0,.3));}
-.star-btn.pressing{animation:starGlow 3s linear forwards;}
-@keyframes starGlow{0%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(255,215,80,0));}100%{transform:scale(1.35);filter:drop-shadow(0 0 14px rgba(255,215,80,.95));}}
+/* 星球（长按 3 秒进入家长模式） */
+.planet-btn{width:58px;height:58px;right:14px;top:8px;border:none;padding:0;cursor:pointer;overflow:visible;}
+.planet-btn.pressing{animation:planetGlow 3s linear forwards;}
+.planet-btn::before{content:"👆";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;opacity:.75;}
+@keyframes planetGlow{0%{transform:scale(1);box-shadow:0 4px 10px rgba(0,0,0,.2);}100%{transform:scale(1.2);box-shadow:0 0 20px rgba(255,216,107,.95);}}
 .planet{width:42px;height:42px;border-radius:50%;position:absolute;right:12px;top:10px;background:radial-gradient(circle at 32% 30%,#FFD86B,#F5A623 70%);box-shadow:0 4px 10px rgba(0,0,0,.2);}
 .planet::after{content:"";position:absolute;inset:-5px -8px;border:2px solid rgba(255,255,255,.6);border-radius:50%;transform:rotate(-18deg);}
 .bg-btn{position:absolute;left:16px;bottom:10px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;background:rgba(0,0,0,.28);border-radius:50%;}
@@ -333,8 +334,7 @@ h2.title{font-size:20px;line-height:1.3;margin-top:2px;}
         <div class="kicker">WELCOME BACK</div>
         <div class="big" id="greetName">袁珞宸的成长地图</div>
         <div class="m2" id="homeMeta">今天也有一点点长大 ⭐</div>
-        <button class="star-btn" id="starBtn" title="长按3秒进入家长模式">⭐<span class="parent-progress" id="parentProgress"></span></button>
-        <div class="planet"></div>
+        <button class="planet planet-btn" id="planetBtn" title="长按3秒进入家长模式"><span class="parent-progress" id="parentProgress"></span></button>
         <button class="bg-btn" id="bgBtn" title="更换背景照片">🖼️</button>
       </div>
       <div class="grid2">
@@ -1023,12 +1023,12 @@ const DB = (() => {
 /* ============================================================
  * 袁珞宸的成长地图 · 应用逻辑
  * 页面：home / books / honors / checkin / feet
- * 模式：孩子模式（默认） / 家长模式（长按星星 3 秒）
+ * 模式：孩子模式（默认） / 家长模式（长按星球圆球 3 秒）
  * ============================================================ */
 
 let S = null;              // 全局数据
 let PARENT = false;        // 家长模式
-const APP_VERSION = 'v2.2.3';
+const APP_VERSION = 'v2.2.4';
 let currentPage = 'home';
 let booksFilter = { mode: 'all', year: null, month: null };
 let honorsFilter = 'all';
@@ -1193,9 +1193,9 @@ function pickBackground() {
   inp.click();
 }
 
-/* 长按星星 3 秒 → 家长模式 */
+/* 长按星球（圆球）3 秒 → 家长模式 */
 function bindStar() {
-  const btn = $('#starBtn');
+  const btn = $('#planetBtn');
   const bar = $('#parentProgress');
   const start = e => {
     e.preventDefault();
