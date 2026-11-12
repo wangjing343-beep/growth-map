@@ -509,7 +509,7 @@ const DB = (() => {
         bgDim: 0.15,
         pin: null,
         customItems: [],
-        checkinItems: ['英语', '数学', '拼音', '练字', '阅读', '运动', '轮滑'],
+        checkinItems: ['英语', '数学', '拼音', '练字', '阅读', '跳绳', '轮滑'],
         encouragements: [
           '今天也完成了一项成长任务，真棒！',
           '每读一本书，都是一次小小冒险！',
@@ -534,6 +534,10 @@ const DB = (() => {
     const d = defaultData();
     const out = Object.assign(d, stored || {});
     out.settings = Object.assign(defaultData().settings, (stored && stored.settings) || {});
+    /* 一次性迁移：打卡项目"运动" → "跳绳"（含历史记录，幂等） */
+    if (Array.isArray(out.settings.checkinItems)) out.settings.checkinItems = out.settings.checkinItems.map(x => x === '运动' ? '跳绳' : x);
+    if (Array.isArray(out.settings.customItems)) out.settings.customItems = out.settings.customItems.map(x => x === '运动' ? '跳绳' : x);
+    if (Array.isArray(out.checkins)) out.checkins.forEach(c => { if (c && c.item === '运动') c.item = '跳绳'; });
     return out;
   }
 
@@ -1028,7 +1032,7 @@ const DB = (() => {
 
 let S = null;              // 全局数据
 let PARENT = false;        // 家长模式
-const APP_VERSION = 'v2.2.4';
+const APP_VERSION = 'v2.2.5';
 let currentPage = 'home';
 let booksFilter = { mode: 'all', year: null, month: null };
 let honorsFilter = 'all';
