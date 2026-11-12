@@ -52,10 +52,10 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink);}
 .home-status{display:flex;justify-content:flex-end;align-items:center;font-size:12px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.35);}
 .sync-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(15,25,50,.45);color:#fff;font-size:11px;border-radius:999px;padding:3px 10px;font-weight:700;backdrop-filter:blur(4px);}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:#8EF0B2;}
-.greet{background:linear-gradient(135deg,rgba(33,46,90,.85) 0%,rgba(70,50,128,.82) 100%);border:1px solid rgba(255,255,255,.3);border-radius:18px;padding:16px 16px 34px;position:relative;box-shadow:0 6px 18px rgba(20,30,70,.3);}
-.greet .kicker{font-size:10px;letter-spacing:2px;color:#FFD86B;font-weight:700;}
-.greet .big{font-size:21px;font-weight:800;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.35);padding-right:96px;margin-top:2px;}
-.greet .m2{font-size:11px;color:rgba(255,255,255,.95);margin-top:5px;text-shadow:0 1px 4px rgba(0,0,0,.3);padding-right:96px;line-height:1.6;}
+.greet{background:linear-gradient(135deg,rgba(33,46,90,.85) 0%,rgba(70,50,128,.82) 100%);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:20px 18px 40px;position:relative;box-shadow:0 6px 18px rgba(20,30,70,.3);}
+.greet .kicker{font-size:11px;letter-spacing:2px;color:#FFD86B;font-weight:700;}
+.greet .big{font-size:26px;font-weight:800;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.35);padding-right:100px;margin-top:4px;}
+.greet .m2{font-size:13px;color:rgba(255,255,255,.96);margin-top:8px;text-shadow:0 1px 4px rgba(0,0,0,.3);padding-right:100px;line-height:1.7;}
 /* 星星（长按进入家长模式）+ 星球 */
 .star-btn{position:absolute;right:40px;top:6px;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;filter:drop-shadow(0 2px 5px rgba(0,0,0,.3));}
 .star-btn.pressing{animation:starGlow 3s linear forwards;}
@@ -66,19 +66,25 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink);}
 .parent-progress{position:absolute;left:0;bottom:0;height:3px;background:#FFD75E;width:0%;border-radius:3px;}
 /* 首页入口卡片 */
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
-.tile{border-radius:18px;padding:16px 13px;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;box-shadow:0 6px 16px rgba(30,40,80,.22);}
+.tile{border-radius:18px;padding:18px 13px;min-height:130px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;box-shadow:0 6px 16px rgba(30,40,80,.22);}
 .tile:active{transform:scale(.97);}
-.tile .icon{font-size:26px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.15));}
-.tile .name{font-size:15px;font-weight:800;margin-top:8px;text-align:center;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.22);}
-.tile .meta{font-size:11px;margin-top:3px;text-align:center;color:rgba(255,255,255,.95);text-shadow:0 1px 3px rgba(0,0,0,.2);}
+.tile .icon{font-size:32px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.15));}
+.tile .name{font-size:17px;font-weight:800;margin-top:9px;text-align:center;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.22);}
+.tile .meta{font-size:12.5px;margin-top:4px;text-align:center;color:rgba(255,255,255,.95);text-shadow:0 1px 3px rgba(0,0,0,.2);}
 .t-yellow{background:linear-gradient(145deg,#F5A623,#FFC95C);} .t-blue{background:linear-gradient(145deg,#3D6EC9,#6FA0E8);}
 .t-green{background:linear-gradient(145deg,#2CA06A,#57C289);} .t-pink{background:linear-gradient(145deg,#E8618F,#F591B8);}
 /* 首页进度与提示 */
-.home-card{background:rgba(255,253,248,.94);border-radius:16px;padding:14px;box-shadow:0 4px 14px rgba(20,30,70,.18);}
-.home-card .row1{display:flex;justify-content:space-between;font-size:13px;font-weight:800;}
-.bar{height:9px;border-radius:99px;background:#F2EADA;margin-top:10px;overflow:hidden;}
+.home-card{background:rgba(255,253,248,.94);border-radius:16px;padding:16px;box-shadow:0 4px 14px rgba(20,30,70,.18);}
+.home-card .row1{display:flex;justify-content:space-between;font-size:14px;font-weight:800;}
+.bar{height:10px;border-radius:99px;background:#F2EADA;margin-top:10px;overflow:hidden;}
 .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#F5A623,#FFC95C);transition:width .5s;}
-.home-tip{font-size:12px;color:var(--ink-soft);margin-top:8px;line-height:1.6;}
+.home-tip{font-size:12.5px;color:var(--ink-soft);margin-top:9px;line-height:1.6;}
+
+/* 本月足迹速览卡 */
+.month-mini{margin-top:12px;}
+.mm-title{font-size:13px;font-weight:800;color:var(--ink);}
+.mm-row{display:flex;gap:8px;margin-top:10px;}
+.mm-row span{flex:1;background:#FFF6E3;border-radius:12px;padding:9px 4px;text-align:center;font-size:12px;font-weight:700;color:var(--ink);}
 .home-foot{text-align:center;color:rgba(255,255,255,.85);font-size:10px;text-shadow:0 1px 3px rgba(0,0,0,.3);}
 
 /* ===== 通用页面头 ===== */
@@ -338,10 +344,11 @@ h2.title{font-size:20px;line-height:1.3;margin-top:2px;}
         <button class="tile t-pink" onclick="showPage('feet')"><span class="icon">👣</span><span class="name">我的脚步</span><span class="meta" id="tileFeet">已点亮 0 座城市</span></button>
       </div>
       <div class="home-card">
-        <div class="row1"><span>本周成长进度</span><span style="color:var(--accent-2);font-size:12px;" id="weekPct">0%</span></div>
+        <div class="row1"><span>本周成长进度</span><span style="color:var(--accent-2);font-size:13px;" id="weekPct">0%</span></div>
         <div class="bar"><i id="weekBar" style="width:0%"></i></div>
         <div class="home-tip" id="homeTip">💬</div>
       </div>
+      <div class="home-card month-mini" id="monthMini"></div>
       <div style="flex:1;"></div>
     </div>
   </section>
@@ -1021,7 +1028,7 @@ const DB = (() => {
 
 let S = null;              // 全局数据
 let PARENT = false;        // 家长模式
-const APP_VERSION = 'v2.2.2';
+const APP_VERSION = 'v2.2.3';
 let currentPage = 'home';
 let booksFilter = { mode: 'all', year: null, month: null };
 let honorsFilter = 'all';
@@ -1151,6 +1158,16 @@ async function renderHome() {
   const pct = totalItems ? Math.min(100, Math.round(doneItems / totalItems * 100)) : 0;
   $('#weekBar').style.width = pct + '%';
   $('#weekPct').textContent = pct + '%';
+
+  /* 本月足迹速览 */
+  const ym = todayStr().slice(0, 7);
+  const ms = periodStats(ym);
+  const mh = S.honors.filter(h => (h.date || '').slice(0, 7) === ym).length;
+  const mc = new Set(S.footprints.filter(f => (f.date || '').slice(0, 7) === ym).map(f => f.city)).size;
+  const monthMini = $('#monthMini');
+  if (monthMini) monthMini.innerHTML = `
+    <div class="mm-title">📅 本月足迹 · ${ym.replace('-', '年')}月</div>
+    <div class="mm-row"><span>📚 读 ${ms.vols} 本</span><span>🏆 荣誉 ${mh} 枚</span><span>👣 ${mc} 座城</span></div>`;
 
   const tips = st.encouragements;
   const idx = (new Date().getDate() + new Date().getMonth()) % tips.length;
