@@ -496,6 +496,7 @@ const DB = (() => {
       updatedAt: null,
       settings: {
         childName: '袁珞宸',
+        birthday: '2021-02-08',
         signature: '袁珞宸独家开发',
         bgPhotoId: null,
         bgDim: 0.15,
@@ -1020,7 +1021,7 @@ const DB = (() => {
 
 let S = null;              // 全局数据
 let PARENT = false;        // 家长模式
-const APP_VERSION = 'v2.2.1';
+const APP_VERSION = 'v2.2.2';
 let currentPage = 'home';
 let booksFilter = { mode: 'all', year: null, month: null };
 let honorsFilter = 'all';
@@ -1112,7 +1113,29 @@ async function renderHome() {
   const cities = new Set(S.footprints.map(f => f.city)).size;
 
   $('#greetName').textContent = st.childName + '的成长地图';
-  $('#homeMeta').textContent = `今天也有一点点长大 ⭐ · 今日成长能量 ${todayTotal ? Math.round(todayDone / todayTotal * 100) : 0}%`;
+
+  /* 日期 + 生日倒计时 + 每日表扬语 */
+  const nowD = new Date();
+  const weekCN = ['日', '一', '二', '三', '四', '五', '六'][nowD.getDay()];
+  const dateText = `${nowD.getMonth() + 1}月${nowD.getDate()}日 周${weekCN}`;
+  let bdayText = '';
+  if (st.birthday) {
+    const [by, bm, bd] = st.birthday.split('-').map(Number);
+    const today0 = new Date(); today0.setHours(0, 0, 0, 0);
+    let nextB = new Date(today0.getFullYear(), bm - 1, bd);
+    if (nextB.getTime() < today0.getTime()) nextB = new Date(today0.getFullYear() + 1, bm - 1, bd);
+    const age = nextB.getFullYear() - by;
+    const daysToB = Math.round((nextB - today0) / 86400000);
+    bdayText = daysToB === 0
+      ? `🎂 今天是你 ${age} 岁生日！生日快乐！`
+      : daysToB === 1
+        ? `🎂 明天就是你 ${age} 岁生日啦！`
+        : `🎂 离你 ${age} 岁生日还有 ${daysToB} 天`;
+  }
+  const praises = ['今天也要闪闪发光哦', '每读一本书，都是一次小小冒险', '继续保持好奇心', '今天的你也很棒', '每一步都算数，继续加油', '坚持的你最耀眼'];
+  const dayOfYear = Math.floor((nowD - new Date(nowD.getFullYear(), 0, 0)) / 86400000);
+  const praise = praises[dayOfYear % praises.length];
+  $('#homeMeta').innerHTML = `📅 今天是 ${dateText} · ${bdayText || praise}<br>⭐ 今日成长能量 ${todayTotal ? Math.round(todayDone / todayTotal * 100) : 0}% · ${praise}`;
 
   $('#tileBooks').textContent = `已读 ${books.distinct} 本` + (S.books.some(b => b.isSeries) ? ` · 含 ${S.books.filter(b => b.isSeries).length} 套套书` : '');
   $('#tileHonors').textContent = `收集 ${honorN} 枚奖章`;
