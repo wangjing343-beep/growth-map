@@ -512,6 +512,7 @@ const DB = (() => {
         bgPhotoId: null,
         bgDim: 0.15,
         pin: null,
+        voiceOn: true,
         customItems: [],
         checkinItems: ['英语', '数学', '拼音', '练字', '阅读', '跳绳', '轮滑'],
         encouragements: [
@@ -1036,7 +1037,7 @@ const DB = (() => {
 
 let S = null;              // 全局数据
 let PARENT = false;        // 家长模式
-const APP_VERSION = 'v2.2.6';
+const APP_VERSION = 'v2.3.0';
 let currentPage = 'home';
 let booksFilter = { mode: 'all', year: null, month: null };
 let honorsFilter = 'all';
@@ -1084,6 +1085,69 @@ function celebrate() {
 }
 
 function save() { return DB.save(); }
+
+/* ============================================================
+ * 语音问候（v2.3）：浏览器内置本地语音合成，零网络开销，不卡顿
+ * ============================================================ */
+function speak(text) {
+  if (!S || !S.settings.voiceOn) return;
+  try {
+    if (!('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-CN';
+    u.rate = 0.95;
+    u.pitch = 1.15;
+    const vs = speechSynthesis.getVoices().filter(v => /^zh/i.test(v.lang) || /Chinese/i.test(v.name));
+    if (vs.length) u.voice = vs.find(v => /CN|cmn/i.test(v.lang)) || vs[0];
+    speechSynthesis.speak(u);
+  } catch (e) { /* 语音失败不影响正常使用 */ }
+}
+
+/* 按时间分档：早上好 / 中午好 / 下午好 / 晚上好 */
+function timeHello() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 11) return '早上好';
+  if (h < 14) return '中午好';
+  if (h < 18) return '下午好';
+  return '晚上好';
+}
+
+const DAILY_PRAISES = ['今天也要闪闪发光哦', '每读一本书都是一次小冒险', '继续保持好奇心', '今天的你也很棒', '每一步都算数', '坚持的你最耀眼'];
+
+/* 开屏问候：每天第一次打开后，点一下屏幕就播报（iOS 要求先有一次触摸） */
+function armVoiceGreeting() {
+  if (!('speechSynthesis' in window) || !S.settings.voiceOn) return;
+  const today = todayStr();
+  try { if (localStorage.getItem('ycm_voice_last') === today) return; } catch (e) {}
+  const fire = () => {
+    document.removeEventListener('pointerdown', fire);
+    try { localStorage.setItem('ycm_voice_last', today); } catch (e) {}
+    const name = S.settings.childName || '小朋友';
+    const praise = DAILY_PRAISES[new Date().getDate() % DAILY_PRAISES.length];
+    speak(`${name}${timeHello()}！欢迎来到成长地图，${praise}！`);
+  };
+  document.addEventListener('pointerdown', fire);
+}
+
+/* 打卡完成后的专属表扬语 */
+const PRAISE_MAP = {
+  '英语': ['英语读得真棒，发音越来越标准啦！', '又学到了新的英语知识，真厉害！'],
+  '数学': ['今天做题又快又准，数学小达人！', '爱动脑筋的你最棒了，数学越来越厉害！'],
+  '拼音': ['拼音读得真标准，进步好大呀！', '拼音小能手，今天也全对了吗？'],
+  '练字': ['今天的字写得真漂亮，又进步了！', '一笔一画真认真，小书法家！'],
+  '阅读': ['读了一本好书，又收获了一个新故事！', '爱读书的孩子最闪亮，继续加油！'],
+  '跳绳': ['今天跳绳跳得真棒，越来越灵活了！', '跳绳小达人！明天要不要挑战更多个？'],
+  '轮滑': ['你今天的轮滑技术肯定又进步了，滑得真帅！', '轮滑越来越稳啦，像小风一样快！']
+};
+const GENERIC_PRAISE = ['完成得真棒，继续加油！', '又点亮一格成长地图，你真了不起！', '坚持打卡的你最耀眼！', '今天的任务完成得漂漂亮亮！'];
+
+function speakCheckinPraise(item) {
+  if (!S.settings.voiceOn) return;
+  const pool = PRAISE_MAP[item] || GENERIC_PRAISE;
+  const name = S.settings.childName || '小朋友';
+  speak(`${name}，${pool[Math.floor(Math.random() * pool.length)]}`);
+}
 
 /* 照片异步填充：<img data-photo="id"> */
 function hydratePhotos(root = document) {
@@ -1147,9 +1211,8 @@ async function renderHome() {
         ? `🎂 明天 <b class="hl">${age}</b> 岁生日`
         : `🎂 <b class="hl">${age}</b> 岁生日还有 <b class="hl">${daysToB}</b> 天`;
   }
-  const praises = ['今天也要闪闪发光哦', '每读一本书都是一次小冒险', '继续保持好奇心', '今天的你也很棒', '每一步都算数', '坚持的你最耀眼'];
   const dayOfYear = Math.floor((nowD - new Date(nowD.getFullYear(), 0, 0)) / 86400000);
-  const praise = praises[dayOfYear % praises.length];
+  const praise = DAILY_PRAISES[dayOfYear % DAILY_PRAISES.length];
   const energy = todayTotal ? Math.round(todayDone / todayTotal * 100) : 0;
   $('#homeMeta').innerHTML = `📅 <b class="hl">${dateText}</b> 周${weekCN} · ${bdayText}<br>⭐ 成长能量 <b class="hl2">${energy}%</b> · <span class="pr">${praise}</span>`;
 
@@ -1885,7 +1948,7 @@ async function renderCheckin() {
     rec.done = !rec.done;
     if (rec.done && !rec.minutes) { rec.minutes = +prompt(`「${item}」用了多少分钟？`, 15) || 15; }
     await save();
-    if (rec.done) { celebrate(); toast('点亮一格 ⭐'); } else toast('已取消');
+    if (rec.done) { celebrate(); toast('点亮一格 ⭐'); speakCheckinPraise(item); } else toast('已取消');
     renderCheckin(); if (currentPage === 'home') renderHome();
   });
   $$('#page-checkin [data-min]').forEach(b => b.onclick = () => {
@@ -2167,6 +2230,7 @@ function showParentPanel() {
       <button class="chip ${!DB.isRemote() && (backupDays === null || backupDays > 7) ? 'on' : ''}" id="pfBackup">${backupLabel}</button>
       <button class="chip" id="pfRestore">📥 恢复备份</button>
       <button class="chip" id="pfPin">🔒 设置密码</button>
+      <button class="chip ${S.settings.voiceOn ? 'on' : ''}" id="pfVoice">🔊 语音问候·${S.settings.voiceOn ? '开' : '关'}</button>
       <button class="chip" id="pfItems">⚙️ 打卡项目</button>
     </div>
     <div class="muted" style="font-size:11px;text-align:center;margin-top:8px;">成长地图 ${APP_VERSION}${DB.isCloud() ? ' · ☁️ 已连接云端' : ''}</div>
@@ -2182,6 +2246,14 @@ function showParentPanel() {
     if (p && !/^\d{4}$/.test(p)) { alert('密码必须是 4 位数字'); return; }
     S.settings.pin = p || null;
     save().then(() => toast(p ? '密码已设置 🔒' : '密码已取消'));
+  };
+  $('#pfVoice').onclick = () => {
+    S.settings.voiceOn = !S.settings.voiceOn;
+    save().then(() => {
+      showParentPanel();
+      toast(S.settings.voiceOn ? '语音问候已开启 🔊' : '语音问候已关闭 🔇');
+      if (S.settings.voiceOn) speak(`${S.settings.childName}，你好呀！我的声音打开啦！`);
+    });
   };
   $('#pfItems').onclick = () => {
     const cur = [...S.settings.checkinItems, ...S.settings.customItems].join('、');
@@ -2530,6 +2602,7 @@ async function init() {
   $('#bgBtn').onclick = pickBackground;
   $('#overlay').onclick = e => { if (e.target === $('#overlay')) closeSheet(); };
   showPage('home');
+  armVoiceGreeting();
   /* 家庭云模式：轮询同步，其他设备有新记录时自动刷新 */
   DB.startSync(data => {
     S = data;
